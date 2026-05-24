@@ -9,7 +9,23 @@
       "PowerShell(dotnet package search *)",
       "PowerShell(dotnet new mstest *)",
       "PowerShell(dotnet sln *)",
-      "PowerShell(dotnet build *)"
+      "PowerShell(dotnet build *)",
+      "Bash(Get-ChildItem -Recurse -Depth 0 \"D:\\\\开发\\\\串口\")",
+      "Bash(Select-Object Name, FullName, Length)",
+      "PowerShell(git *)",
+      "PowerShell(Get-ChildItem \"D:\\\\开发\\\\串口\" -Recurse -Depth 4 | Where-Object { -not $_.PSIsContainer } | Select-Object FullName)",
+      "PowerShell(Remove-Item *)",
+      "Bash(dotnet restore *)",
+      "Bash(dotnet build *)",
+      "PowerShell(New-Item *)",
+      "Bash(New-Item *)",
+      "PowerShell(dotnet test *)",
+      "Bash(dotnet test *)",
+      "Bash(Get-ChildItem \"D:\\\\开发\\\\串口\\\\src\\\\SerialMaster.Core\" -Recurse -Name)",
+      "Bash(Select-Object -First 50)",
+      "Bash(Get-ChildItem -Recurse -Name \"D:\\\\开发\\\\串口\" -Depth 3)",
+      "Bash(Select-Object -First 100)",
+      "PowerShell(Stop-Process *)"
     ]
   }
 }

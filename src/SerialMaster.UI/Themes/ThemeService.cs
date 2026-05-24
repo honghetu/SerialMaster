@@ -9,11 +9,12 @@ public class ThemeService
     public void ApplyTheme(string theme)
     {
         CurrentTheme = theme;
-        string themePath = theme == "Light" ? "Themes/LightTheme.xaml" : "Themes/DarkTheme.xaml";
+        string themeFile = theme == "Light" ? "LightTheme.xaml" : "DarkTheme.xaml";
+        var uri = new Uri($"pack://application:,,,/SerialMaster.UI;component/Themes/{themeFile}");
 
         var dict = new ResourceDictionary
         {
-            Source = new Uri(themePath, UriKind.Relative)
+            Source = uri
         };
 
         Application.Current.Resources.MergedDictionaries.Clear();
