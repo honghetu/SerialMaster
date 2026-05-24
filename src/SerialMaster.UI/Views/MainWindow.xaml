@@ -15,15 +15,76 @@
     </Window.Resources>
 
     <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
 
-        <views:DeviceManagerView Grid.Column="0"
-                                 DataContext="{Binding DeviceManager}"/>
+        <!-- 菜单栏 -->
+        <Menu Grid.Row="0" Background="{StaticResource SecondaryBackgroundBrush}"
+              Foreground="{StaticResource PrimaryTextBrush}">
+            <MenuItem Header="文件(_F)">
+                <MenuItem Header="新建连接(_N)" InputGestureText="Ctrl+N"
+                          Command="{Binding NewConnectionCommand}"/>
+                <MenuItem Header="保存日志(_S)" InputGestureText="Ctrl+S"
+                          Command="{Binding SaveLogCommand}"/>
+                <MenuItem Header="导出数据(_E)..." InputGestureText="Ctrl+E"
+                          Command="{Binding ExportDataCommand}"/>
+                <Separator/>
+                <MenuItem Header="退出(_X)" InputGestureText="Alt+F4"
+                          Command="{Binding ExitCommand}"/>
+            </MenuItem>
 
-        <Grid Grid.Column="1">
+            <MenuItem Header="编辑(_E)">
+                <MenuItem Header="清空当前(_C)" InputGestureText="Ctrl+L"
+                          Command="{Binding ClearCurrentCommand}"/>
+                <MenuItem Header="清空所有(_A)"
+                          Command="{Binding ClearAllCommand}"/>
+                <Separator/>
+                <MenuItem Header="发送收藏夹(_F)..." InputGestureText="Ctrl+Shift+F"
+                          Command="{Binding OpenFavoritesCommand}"/>
+            </MenuItem>
+
+            <MenuItem Header="视图(_V)">
+                <MenuItem Header="浅色主题(_L)" IsCheckable="True"
+                          IsChecked="{Binding IsLightTheme}"
+                          Command="{Binding ToggleThemeCommand}"/>
+                <Separator/>
+                <MenuItem Header="波形视图(_W)" Command="{Binding ToggleWaveformCommand}"/>
+                <MenuItem Header="雷达视图(_R)" Command="{Binding ToggleRadarCommand}"/>
+                <MenuItem Header="3D 视图(_3)" Command="{Binding ToggleView3DCommand}"/>
+                <MenuItem Header="统计面板(_T)" Command="{Binding ToggleStatisticsCommand}"/>
+                <Separator/>
+                <MenuItem Header="终端模式(_M)" Command="{Binding ToggleTerminalCommand}"/>
+            </MenuItem>
+
+            <MenuItem Header="工具(_T)">
+                <MenuItem Header="校验计算器(_C)..." Command="{Binding OpenChecksumCommand}"/>
+                <MenuItem Header="协议解析器(_P)..." Command="{Binding OpenParserCommand}"/>
+                <MenuItem Header="宏编辑器(_M)..." Command="{Binding OpenMacroCommand}"/>
+                <Separator/>
+                <MenuItem Header="文件传输(_F)..." Command="{Binding OpenFileTransferCommand}"/>
+                <MenuItem Header="引脚控制(_D)...">
+                    <MenuItem Header="DTR 复位" Command="{Binding ResetDtrCommand}"/>
+                    <MenuItem Header="RTS Bootloader" Command="{Binding BootRtsCommand}"/>
+                </MenuItem>
+            </MenuItem>
+
+            <MenuItem Header="帮助(_H)">
+                <MenuItem Header="关于 SerialMaster(_A)..." Command="{Binding AboutCommand}"/>
+            </MenuItem>
+        </Menu>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <views:DeviceManagerView Grid.Column="0"
+                                     DataContext="{Binding DeviceManager}"/>
+
+            <Grid Grid.Column="1">
             <TextBlock Text="选择一个设备并点击「连接」开始"
                        Foreground="{StaticResource MutedTextBrush}"
                        FontSize="16" HorizontalAlignment="Center"
@@ -57,6 +118,7 @@
                     </DataTemplate>
                 </TabControl.ContentTemplate>
             </TabControl>
+            </Grid>
         </Grid>
     </Grid>
 </Window>
