@@ -37,7 +37,7 @@
                         <StackPanel Grid.Row="0" Orientation="Horizontal">
                             <Ellipse Width="8" Height="8" Margin="0,0,6,0"
                                      Fill="{Binding IsConnected,
-                                         Converter={DynamicResource ConnectedBrushConverter}}"/>
+                                         Converter={StaticResource ConnectedBrushConverter}}"/>
                             <TextBlock Text="{Binding PortName}" FontWeight="SemiBold"
                                        Foreground="{DynamicResource PrimaryTextBrush}"/>
                             <TextBlock Text="{Binding StatusText, StringFormat=' — {0}'}"
