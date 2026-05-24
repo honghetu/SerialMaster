@@ -8,8 +8,8 @@ public sealed class SerialPortService : ISerialPortService
 {
     private SerialPort? _port;
     private readonly Channel<DataRecord> _channel;
-    private readonly CancellationTokenSource _cts = new();
     private bool _disposed;
+    private volatile bool _closing;
 
     public SerialConfig Config { get; private set; } = null!;
     public bool IsOpen => _port?.IsOpen ?? false;
@@ -57,6 +57,8 @@ public sealed class SerialPortService : ISerialPortService
 
     private void OnDataReceived(object sender, SerialDataReceivedEventArgs e)
     {
+        if (_closing) return;
+
         var sp = (SerialPort)sender;
         int bytesToRead = sp.BytesToRead;
 
@@ -115,6 +117,7 @@ public sealed class SerialPortService : ISerialPortService
         {
             case "DTR": _port.DtrEnable = state; break;
             case "RTS": _port.RtsEnable = state; break;
+            default: throw new ArgumentException($"Unknown pin name: {pin}", nameof(pin));
         }
     }
 
@@ -128,7 +131,7 @@ public sealed class SerialPortService : ISerialPortService
             "RTS" => _port.RtsEnable,
             "CTS" => _port.CtsHolding,
             "DSR" => _port.DsrHolding,
-            _ => false
+            _ => throw new ArgumentException($"Unknown pin name: {pin}", nameof(pin))
         };
     }
 
@@ -136,18 +139,22 @@ public sealed class SerialPortService : ISerialPortService
     {
         if (_port != null)
         {
+            _closing = true;
             _port.DataReceived -= OnDataReceived;
             _port.ErrorReceived -= OnErrorReceived;
 
+            bool wasOpen = _port.IsOpen;
             try
             {
-                if (_port.IsOpen) _port.Close();
+                if (wasOpen) _port.Close();
             }
             catch { }
 
             _port.Dispose();
             _port = null;
-            ConnectionStateChanged?.Invoke(this, EventArgs.Empty);
+
+            if (wasOpen)
+                ConnectionStateChanged?.Invoke(this, EventArgs.Empty);
         }
     }
 
@@ -156,9 +163,7 @@ public sealed class SerialPortService : ISerialPortService
         if (_disposed) return;
         _disposed = true;
 
-        _cts.Cancel();
         _channel.Writer.TryComplete();
         Close();
-        _cts.Dispose();
     }
 }

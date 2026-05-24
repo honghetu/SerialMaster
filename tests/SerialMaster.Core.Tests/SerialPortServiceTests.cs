@@ -63,7 +63,7 @@ public class SerialPortServiceTests
     }
 
     [TestMethod]
-    public void Dispose_ClosesPort()
+    public void Dispose_IsIdempotent()
     {
         using var service = new SerialPortService();
         service.Dispose();
