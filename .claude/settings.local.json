@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(dotnet --version)",
+      "PowerShell(dotnet new sln *)",
+      "PowerShell(dotnet new classlib *)",
+      "PowerShell(dotnet add *)",
+      "PowerShell(dotnet new wpf *)",
+      "PowerShell(dotnet package search *)",
+      "PowerShell(dotnet new mstest *)",
+      "PowerShell(dotnet sln *)",
+      "PowerShell(dotnet build *)"
+    ]
+  }
+}
