@@ -253,6 +253,16 @@
 
             <TextBlock Style="{StaticResource H2}">💡 反馈</TextBlock>
             <TextBlock Style="{StaticResource Body}">本工具 MIT 开源，欢迎在 GitHub 提 Issue / PR。崩溃报告请把 %LocalAppData%\SerialMaster\logs\ 当天日志附上。</TextBlock>
+            <Border Style="{StaticResource Code}">
+                <StackPanel>
+                    <TextBlock Style="{StaticResource CodeText}">
+                        <Run Text="GitHub:    " Foreground="{DynamicResource AccentBrush}"/><Run Text="https://github.com/honghetu/SerialMaster" Foreground="{DynamicResource PrimaryTextBrush}"/>
+                    </TextBlock>
+                    <TextBlock Style="{StaticResource CodeText}">
+                        <Run Text="联系邮箱:  " Foreground="{DynamicResource AccentBrush}"/><Run Text="13947617581@163.com" Foreground="{DynamicResource PrimaryTextBrush}"/>
+                    </TextBlock>
+                </StackPanel>
+            </Border>
 
             <TextBlock Style="{StaticResource Hint}" Margin="0,24,0,8">— 完 —</TextBlock>
 

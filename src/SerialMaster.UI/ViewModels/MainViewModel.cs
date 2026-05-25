@@ -664,7 +664,8 @@ public partial class MainViewModel : ObservableObject
             $"SerialMaster 串口大师 v{version}\n\n" +
             "面向嵌入式开发的多功能串口调试工具\n" +
             "WPF + .NET 8 | MVVM\n\n" +
-            "https://github.com/  (待发布)",
+            "https://github.com/honghetu/SerialMaster\n" +
+            "联系邮箱: 13947617581@163.com",
             "关于 SerialMaster",
             MessageBoxButton.OK, MessageBoxImage.Information);
     }

@@ -2,6 +2,9 @@
 
 面向嵌入式开发的多功能串口调试工具。WPF + .NET 8，MVVM 架构。
 
+**GitHub**: https://github.com/honghetu/SerialMaster
+**联系邮箱**: 13947617581@163.com
+
 ## 功能概览
 
 | 类别 | 功能 |
