@@ -4,6 +4,16 @@
 
 ## [Unreleased]
 
+## [1.6.1] - 2026-05-25
+
+### Fixed
+- About 和"检查更新"弹窗错误地显示 v1.0：之前用 `typeof(MainViewModel).Assembly`
+  取的是 SerialMaster.UI 工程集（默认版本 1.0），改用 `Assembly.GetEntryAssembly()`
+  正确读取 SerialMaster.App.exe 的版本号
+
+### Changed
+- 新增 `Directory.Build.props` 作为版本号唯一来源（3 个项目自动继承）
+
 ## [1.6.0] - 2026-05-25
 
 ### Added

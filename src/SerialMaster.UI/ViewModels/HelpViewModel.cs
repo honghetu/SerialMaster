@@ -16,7 +16,11 @@ public partial class HelpViewModel : ObservableObject
     public HelpViewModel(Action closeCallback)
     {
         _closeCallback = closeCallback;
-        Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "?";
+        // GetEntryAssembly = SerialMaster.App (the .exe), which carries the real Version.
+        // GetExecutingAssembly here returns SerialMaster.UI (defaults to 1.0).
+        Version = Assembly.GetEntryAssembly()?.GetName().Version?.ToString(3)
+                  ?? Assembly.GetExecutingAssembly().GetName().Version?.ToString(3)
+                  ?? "?";
     }
 
     public void Close() => _closeCallback();

@@ -581,7 +581,7 @@ public partial class MainViewModel : ObservableObject
     private async Task CheckForUpdates()
     {
         var svc = new UpdateCheckService();
-        var current = typeof(MainViewModel).Assembly.GetName().Version ?? new Version(0, 0);
+        var current = AppVersion();
         var info = await svc.CheckAsync(current);
 
         if (!string.IsNullOrEmpty(info.Error))
@@ -614,7 +614,7 @@ public partial class MainViewModel : ObservableObject
         {
             await Task.Delay(2500);  // let UI settle first
             var svc = new UpdateCheckService();
-            var current = typeof(MainViewModel).Assembly.GetName().Version ?? new Version(0, 0);
+            var current = AppVersion();
             var info = await svc.CheckAsync(current);
             if (!info.HasUpdate || info.LatestVersion == null) return;
 
@@ -655,11 +655,16 @@ public partial class MainViewModel : ObservableObject
         ActiveSession = help;
     }
 
+    /// <summary>Always returns the entry .exe's version (i.e. SerialMaster.App).</summary>
+    private static Version AppVersion()
+        => System.Reflection.Assembly.GetEntryAssembly()?.GetName().Version
+           ?? typeof(MainViewModel).Assembly.GetName().Version
+           ?? new Version(0, 0);
+
     [RelayCommand]
     private void About()
     {
-        var asm = typeof(MainViewModel).Assembly;
-        var version = asm.GetName().Version?.ToString(3) ?? "?";
+        var version = AppVersion().ToString(3);
         MessageBox.Show(
             $"SerialMaster 串口大师 v{version}\n\n" +
             "面向嵌入式开发的多功能串口调试工具\n" +
