@@ -3,6 +3,7 @@ name: build-and-test
 on:
   push:
     branches: [main]
+    tags: ['v*']        # IMPORTANT: tag pushes also trigger the workflow
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -38,6 +39,8 @@ jobs:
     runs-on: windows-latest
     needs: build
     if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: write       # IMPORTANT: required for action-gh-release to create the Release
     steps:
       - uses: actions/checkout@v4
 

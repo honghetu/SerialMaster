@@ -17,6 +17,9 @@ obj/
 ## VS Code
 .vscode/
 
+## Claude Code (local user config — should not be in repo)
+.claude/
+
 ## OS
 .DS_Store
 Thumbs.db
