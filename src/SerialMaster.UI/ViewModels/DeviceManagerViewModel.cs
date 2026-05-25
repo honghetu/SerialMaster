@@ -46,7 +46,23 @@ public partial class DeviceManagerViewModel : ObservableObject
                     }
                 }
 
-                var toRemove = Devices.Where(d => !ports.Any(p => p.PortName == d.PortName)).ToList();
+                foreach (var existing in Devices)
+                {
+                    if (!ports.Any(p => p.PortName == existing.PortName))
+                    {
+                        if (existing.IsConnected)
+                        {
+                            existing.IsConnected = false;
+                            existing.StatusText = "设备已断开";
+                            existing.HasError = true;
+                            existing.Config = null;
+                        }
+                    }
+                }
+
+                var toRemove = Devices
+                    .Where(d => !ports.Any(p => p.PortName == d.PortName) && !d.IsConnected)
+                    .ToList();
                 foreach (var item in toRemove)
                     Devices.Remove(item);
             });
@@ -58,9 +74,18 @@ public partial class DeviceManagerViewModel : ObservableObject
     {
         var ports = _enumerator.GetAvailablePorts();
 
+        var connected = Devices.Where(d => d.IsConnected).ToDictionary(d => d.PortName);
         Devices.Clear();
         foreach (var port in ports)
+        {
+            if (connected.TryGetValue(port.PortName, out var existing))
+            {
+                port.IsConnected = existing.IsConnected;
+                port.StatusText = existing.StatusText;
+                port.Config = existing.Config;
+            }
             Devices.Add(port);
+        }
     }
 
     [RelayCommand]

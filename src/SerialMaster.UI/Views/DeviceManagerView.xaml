@@ -7,8 +7,8 @@
 
     <UserControl.Resources>
         <conv:BoolToBrushConverter x:Key="ConnectedBrushConverter"
-            TrueBrush="{DynamicResource SuccessBrush}"
-            FalseBrush="{DynamicResource MutedTextBrush}"/>
+            TrueBrush="{StaticResource SuccessBrush}"
+            FalseBrush="{StaticResource MutedTextBrush}"/>
     </UserControl.Resources>
 
     <Grid Margin="8">

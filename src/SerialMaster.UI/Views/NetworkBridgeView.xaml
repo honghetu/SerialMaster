@@ -1,0 +1,137 @@
+<UserControl x:Class="SerialMaster.UI.Views.NetworkBridgeView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:conv="clr-namespace:SerialMaster.UI.Converters">
+    <UserControl.Resources>
+        <conv:InvertBoolConverter x:Key="InvertBool"/>
+    </UserControl.Resources>
+    <Grid Margin="10">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="320"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <Border Grid.Column="0" Background="{DynamicResource SurfaceBrush}"
+                BorderBrush="{DynamicResource SurfaceBorderBrush}"
+                BorderThickness="1" Padding="14" CornerRadius="4">
+            <StackPanel>
+                <TextBlock Text="🌐 TCP/UDP ↔ Serial 桥" FontSize="16" FontWeight="SemiBold"
+                           Foreground="{DynamicResource PrimaryTextBrush}" Margin="0,0,0,12"/>
+
+                <TextBlock Text="串口" FontSize="11" Foreground="{DynamicResource SecondaryTextBrush}"/>
+                <Grid Margin="0,2,0,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <ComboBox ItemsSource="{Binding AvailablePorts}"
+                              SelectedItem="{Binding SelectedPort}"/>
+                    <Button Grid.Column="1" Content="↻" Width="28" Margin="4,0,0,0"
+                            Command="{Binding RefreshPortsCommand}"/>
+                </Grid>
+
+                <TextBlock Text="波特率" FontSize="11" Foreground="{DynamicResource SecondaryTextBrush}"/>
+                <ComboBox ItemsSource="{Binding BaudRates}"
+                          SelectedItem="{Binding SelectedBaudRate}" Margin="0,2,0,12"/>
+
+                <TextBlock Text="桥模式" FontSize="11" Foreground="{DynamicResource SecondaryTextBrush}"/>
+                <ComboBox ItemsSource="{Binding Modes}"
+                          SelectedItem="{Binding SelectedMode}" Margin="0,2,0,8"/>
+
+                <Grid Margin="0,0,0,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="80"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel>
+                        <TextBlock Text="Host / 远端地址" FontSize="11" Foreground="{DynamicResource SecondaryTextBrush}"/>
+                        <TextBox Text="{Binding Host, UpdateSourceTrigger=PropertyChanged}"
+                                 ToolTip="TcpClient: 必填. TcpServer: 忽略. UDP: 目标地址（可留空，使用首个来源）"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Margin="6,0,0,0">
+                        <TextBlock Text="端口" FontSize="11" Foreground="{DynamicResource SecondaryTextBrush}"/>
+                        <TextBox Text="{Binding Port, UpdateSourceTrigger=PropertyChanged}"
+                                 FontFamily="Consolas"/>
+                    </StackPanel>
+                </Grid>
+
+                <StackPanel Orientation="Horizontal" Margin="0,8,0,12">
+                    <Button Content="启动桥" Width="100" Height="32"
+                            Background="{DynamicResource SuccessBrush}" Foreground="#1E1E2E"
+                            BorderThickness="0" FontWeight="SemiBold"
+                            Command="{Binding StartBridgeCommand}"
+                            IsEnabled="{Binding IsRunning, Converter={StaticResource InvertBool}}"/>
+                    <Button Content="停止" Width="80" Height="32" Margin="6,0,0,0"
+                            Background="{DynamicResource ErrorBrush}" Foreground="{DynamicResource PrimaryBackgroundBrush}"
+                            BorderThickness="0"
+                            Command="{Binding StopBridgeCommand}"
+                            IsEnabled="{Binding IsRunning}"/>
+                </StackPanel>
+
+                <Border Background="{DynamicResource SecondaryBackgroundBrush}"
+                        BorderBrush="{DynamicResource SurfaceBorderBrush}"
+                        BorderThickness="1" Padding="8" CornerRadius="3">
+                    <StackPanel>
+                        <TextBlock Text="流量统计" FontWeight="SemiBold" FontSize="12"
+                                   Foreground="{DynamicResource PrimaryTextBrush}" Margin="0,0,0,6"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock FontSize="11" Foreground="{DynamicResource SecondaryTextBrush}">
+                                    <Run Text="Serial→Net:"/>
+                                </TextBlock>
+                                <TextBlock FontFamily="Consolas" FontSize="13"
+                                           Foreground="{DynamicResource AccentBrush}">
+                                    <Run Text="{Binding SerialRx}"/><Run Text=" B"/>
+                                </TextBlock>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1">
+                                <TextBlock FontSize="11" Foreground="{DynamicResource SecondaryTextBrush}">
+                                    <Run Text="Net→Serial:"/>
+                                </TextBlock>
+                                <TextBlock FontFamily="Consolas" FontSize="13"
+                                           Foreground="{DynamicResource SuccessBrush}">
+                                    <Run Text="{Binding NetRx}"/><Run Text=" B"/>
+                                </TextBlock>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </Border>
+
+        <Border Grid.Column="1" Background="{DynamicResource PrimaryBackgroundBrush}"
+                BorderBrush="{DynamicResource SurfaceBorderBrush}"
+                BorderThickness="1" Margin="10,0,0,0" CornerRadius="4">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Border Grid.Row="0" Background="{DynamicResource SecondaryBackgroundBrush}" Padding="10,6">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="桥日志" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource PrimaryTextBrush}"/>
+                        <Button Content="清空" Width="60" Margin="20,0,0,0" Height="22"
+                                Command="{Binding ClearLogCommand}"/>
+                    </StackPanel>
+                </Border>
+                <ListBox Grid.Row="1" ItemsSource="{Binding LogLines}"
+                         Background="{DynamicResource PrimaryBackgroundBrush}"
+                         BorderThickness="0"
+                         FontFamily="Consolas" FontSize="11"
+                         VirtualizingStackPanel.IsVirtualizing="True">
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="ListBoxItem">
+                            <Setter Property="Padding" Value="8,1"/>
+                            <Setter Property="Background" Value="Transparent"/>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                </ListBox>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

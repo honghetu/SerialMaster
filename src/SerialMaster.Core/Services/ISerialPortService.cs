@@ -12,6 +12,13 @@ public interface ISerialPortService : IDisposable
     event EventHandler<string>? ErrorOccurred;
     event EventHandler? ConnectionStateChanged;
 
+    /// <summary>
+    /// Fired (in addition to the Channel) whenever bytes are received or sent.
+    /// Use this for transient consumers like file-transfer protocols (XMODEM) that
+    /// need to peek bytes without consuming the primary Channel.
+    /// </summary>
+    event EventHandler<DataRecord>? DataReceived;
+
     void Open(SerialConfig config);
     void Close();
     Task SendAsync(byte[] data);

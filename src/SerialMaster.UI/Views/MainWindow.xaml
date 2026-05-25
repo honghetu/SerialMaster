@@ -6,12 +6,20 @@
         xmlns:conv="clr-namespace:SerialMaster.UI.Converters"
         Title="SerialMaster" Height="700" Width="1100"
         MinHeight="400" MinWidth="800"
-        WindowStartupLocation="CenterScreen">
+        WindowStartupLocation="CenterScreen"
+        Icon="pack://application:,,,/SerialMaster.App;component/Assets/app.ico">
+
+    <Window.InputBindings>
+        <KeyBinding Key="N" Modifiers="Control" Command="{Binding NewConnectionCommand}"/>
+        <KeyBinding Key="O" Modifiers="Control" Command="{Binding OpenLogCommand}"/>
+        <KeyBinding Key="S" Modifiers="Control" Command="{Binding SaveLogCommand}"/>
+        <KeyBinding Key="E" Modifiers="Control" Command="{Binding ExportDataCommand}"/>
+        <KeyBinding Key="L" Modifiers="Control" Command="{Binding ClearCurrentCommand}"/>
+        <KeyBinding Key="F" Modifiers="Control+Shift" Command="{Binding OpenFavoritesCommand}"/>
+        <KeyBinding Key="F1" Command="{Binding OpenHelpCommand}"/>
+    </Window.InputBindings>
 
     <Window.Resources>
-        <conv:BoolToBrushConverter x:Key="ConnectedBrushConverter"
-            TrueBrush="{DynamicResource SuccessBrush}"
-            FalseBrush="{DynamicResource MutedTextBrush}"/>
         <conv:ZeroToVisibleConverter x:Key="ZeroToVisible"/>
 
         <DataTemplate DataType="{x:Type vm:SessionViewModel}">
@@ -19,6 +27,39 @@
         </DataTemplate>
         <DataTemplate DataType="{x:Type vm:LogViewerSession}">
             <views:LogViewerView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:PlaceholderSession}">
+            <views:PlaceholderView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:ChecksumViewModel}">
+            <views:ChecksumView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:FavoritesViewModel}">
+            <views:FavoritesView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:ProtocolParserViewModel}">
+            <views:ProtocolParserView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:MacroEditorViewModel}">
+            <views:MacroEditorView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:FileTransferViewModel}">
+            <views:FileTransferView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:FirmwareBurnerViewModel}">
+            <views:FirmwareBurnerView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:CanBusViewModel}">
+            <views:CanBusView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:NetworkBridgeViewModel}">
+            <views:NetworkBridgeView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:StatisticsViewModel}">
+            <views:StatisticsView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:HelpViewModel}">
+            <views:HelpView/>
         </DataTemplate>
     </Window.Resources>
 
@@ -75,6 +116,10 @@
                 <MenuItem Header="宏编辑器(_M)..." Command="{Binding OpenMacroCommand}"/>
                 <Separator/>
                 <MenuItem Header="文件传输(_F)..." Command="{Binding OpenFileTransferCommand}"/>
+                <MenuItem Header="🔥 固件烧录器(_B)..." Command="{Binding OpenBurnerCommand}"/>
+                <MenuItem Header="🚌 CAN 总线(_K)..." Command="{Binding OpenCanBusCommand}"/>
+                <MenuItem Header="🌐 TCP/UDP 桥(_N)..." Command="{Binding OpenBridgeCommand}"/>
+                <Separator/>
                 <MenuItem Header="引脚控制(_D)...">
                     <MenuItem Header="DTR 复位" Command="{Binding ResetDtrCommand}"/>
                     <MenuItem Header="RTS Bootloader" Command="{Binding BootRtsCommand}"/>
@@ -82,6 +127,11 @@
             </MenuItem>
 
             <MenuItem Header="帮助(_H)">
+                <MenuItem Header="📘 使用说明(_U)..." InputGestureText="F1"
+                          Command="{Binding OpenHelpCommand}"/>
+                <Separator/>
+                <MenuItem Header="🔄 检查更新(_C)..."
+                          Command="{Binding CheckForUpdatesCommand}"/>
                 <MenuItem Header="关于 SerialMaster(_A)..." Command="{Binding AboutCommand}"/>
             </MenuItem>
         </Menu>
@@ -109,7 +159,7 @@
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal">
                                 <Ellipse Width="8" Height="8" Margin="0,0,6,0"
-                                         Fill="{DynamicResource SuccessBrush}"/>
+                                         Fill="{DynamicResource AccentBrush}"/>
                                 <TextBlock Text="{Binding TabTitle}"/>
                                 <Button Content="×" Width="20" Height="20"
                                         FontSize="14" Margin="6,0,0,0"

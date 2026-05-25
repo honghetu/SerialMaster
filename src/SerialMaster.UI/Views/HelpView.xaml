@@ -1,0 +1,261 @@
+<UserControl x:Class="SerialMaster.UI.Views.HelpView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <UserControl.Resources>
+        <Style x:Key="H1" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="22"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
+            <Setter Property="Margin" Value="0,4,0,12"/>
+        </Style>
+        <Style x:Key="H2" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{DynamicResource AccentBrush}"/>
+            <Setter Property="Margin" Value="0,18,0,8"/>
+        </Style>
+        <Style x:Key="H3" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
+            <Setter Property="Margin" Value="0,10,0,4"/>
+        </Style>
+        <Style x:Key="Body" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}"/>
+            <Setter Property="Margin" Value="0,2,0,2"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="LineHeight" Value="20"/>
+        </Style>
+        <Style x:Key="Code" TargetType="Border">
+            <Setter Property="Background" Value="{DynamicResource SurfaceBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SurfaceBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="Margin" Value="0,4,0,4"/>
+        </Style>
+        <Style x:Key="CodeText" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="Consolas"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Foreground" Value="{DynamicResource HexDataBrush}"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+        </Style>
+        <Style x:Key="Hint" TargetType="TextBlock" BasedOn="{StaticResource Body}">
+            <Setter Property="FontStyle" Value="Italic"/>
+            <Setter Property="Foreground" Value="{DynamicResource MutedTextBrush}"/>
+        </Style>
+    </UserControl.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
+                  Padding="24,16">
+        <StackPanel MaxWidth="900" HorizontalAlignment="Left">
+
+            <TextBlock Style="{StaticResource H1}">
+                <Run Text="📘 SerialMaster 使用说明"/>
+                <Run Text="  v"/><Run Text="{Binding Version}"/>
+            </TextBlock>
+            <TextBlock Style="{StaticResource Hint}">面向嵌入式开发的多功能串口调试工具：多端口并行、HEX/ASCII/双栏/终端显示、协议解析、波形可视化、CAN、TCP/UDP 桥、固件烧录</TextBlock>
+
+            <!-- 快速上手 -->
+            <TextBlock Style="{StaticResource H2}">🚀 30 秒上手</TextBlock>
+            <TextBlock Style="{StaticResource Body}">
+                <Run Text="1. "/><Run Text="左侧 " FontWeight="SemiBold"/><Run Text="「设备列表」"/><Run Text="选一个 COM 口 → 点 "/><Run Text="「连接」" FontWeight="SemiBold"/><Run Text="（带绿点 = 已连接）"/>
+            </TextBlock>
+            <TextBlock Style="{StaticResource Body}">
+                <Run Text="2. 数据自动出现在中间 "/><Run Text="数据列表" FontWeight="SemiBold"/><Run Text="，按时间倒序，左侧标 "/><Run Text="Send:" Foreground="{DynamicResource SendDirectionBrush}" FontWeight="Bold"/><Run Text=" 或 "/><Run Text="Receive:" Foreground="{DynamicResource ReceiveDirectionBrush}" FontWeight="Bold"/>
+            </TextBlock>
+            <TextBlock Style="{StaticResource Body}">
+                <Run Text="3. 下方 "/><Run Text="发送区" FontWeight="SemiBold"/><Run Text=" 输入文本 → 点 "/><Run Text="「发送」" FontWeight="SemiBold"/><Run Text="（或 Ctrl+Enter）→ 状态行会立即反馈成功/失败原因"/>
+            </TextBlock>
+
+            <!-- 顶部工具栏 -->
+            <TextBlock Style="{StaticResource H2}">⚙ 顶部工具栏（发送区上方）</TextBlock>
+            <TextBlock Style="{StaticResource H3}">波特率</TextBlock>
+            <TextBlock Style="{StaticResource Body}">21 档常用速率（300~2M），也可手动输入自定义值。切换会自动重开当前端口，所有已收数据保留。若 MCU 速率不确定，可从 115200 → 9600 → 38400 逐档试。</TextBlock>
+
+            <TextBlock Style="{StaticResource H3}">显示模式</TextBlock>
+            <TextBlock Style="{StaticResource Body}">
+                • <Run Text="HEX" FontWeight="SemiBold"/>：默认，每字节两位 HEX，长帧自动折行
+                <LineBreak/>
+                • <Run Text="ASCII" FontWeight="SemiBold"/>：把字节按 ASCII 显示，不可打印字符显示为 ·
+                <LineBreak/>
+                • <Run Text="Dual" FontWeight="SemiBold"/>：每条记录上 HEX 下 ASCII 对照
+                <LineBreak/>
+                • <Run Text="Terminal" FontWeight="SemiBold"/>：连续文本流，适合 MCU shell / log 输出
+            </TextBlock>
+
+            <TextBlock Style="{StaticResource H3}">发送格式 / 行尾</TextBlock>
+            <TextBlock Style="{StaticResource Body}">
+                <Run Text="格式" FontWeight="SemiBold"/>：
+                <LineBreak/>
+                • <Run Text="Auto" FontFamily="Consolas"/>：自动识别（全 hex 字符按 HEX 解析，否则按 UTF-8 文本）
+                <LineBreak/>
+                • <Run Text="Hex" FontFamily="Consolas"/>：强制 HEX，支持 0x 前缀、空格、连字符、奇数位自动补 0
+                <LineBreak/>
+                • <Run Text="Ascii / Utf8" FontFamily="Consolas"/>：纯文本编码，自动追加行尾
+            </TextBlock>
+            <TextBlock Style="{StaticResource Body}">
+                <Run Text="行尾" FontWeight="SemiBold"/>：发文本时追加 None / CR / LF / CRLF；HEX 模式忽略此项
+            </TextBlock>
+
+            <!-- 发送区按钮 -->
+            <TextBlock Style="{StaticResource H2}">🎯 发送区按钮</TextBlock>
+            <Border Style="{StaticResource Code}">
+                <TextBlock Style="{StaticResource CodeText}" Foreground="{DynamicResource PrimaryTextBrush}">
+                <Run Text="发送 (Ctrl+Enter)" Foreground="{DynamicResource AccentBrush}"/><Run Text="   立即发送"/>
+                <LineBreak/>
+                <Run Text="定时" Foreground="{DynamicResource AccentBrush}"/><Run Text="                按设定毫秒间隔周期发送当前文本"/>
+                <LineBreak/>
+                <Run Text="⏸" Foreground="{DynamicResource AccentBrush}"/><Run Text="                   暂停接收（不丢数据，恢复继续）"/>
+                <LineBreak/>
+                <Run Text="解析" Foreground="{DynamicResource AccentBrush}"/><Run Text="                切换协议解析面板"/>
+                <LineBreak/>
+                <Run Text="录制" Foreground="{DynamicResource AccentBrush}"/><Run Text="                把所有收发数据写入 %LocalAppData%\SerialMaster\data\"/>
+                <LineBreak/>
+                <Run Text="波形/雷达/3D" Foreground="{DynamicResource AccentBrush}"/><Run Text="        独立浮窗，从 ASCII 数值或协议字段取数据"/>
+                <LineBreak/>
+                <Run Text="清空" Foreground="{DynamicResource AccentBrush}"/><Run Text="                清空当前会话的列表"/>
+                </TextBlock>
+            </Border>
+
+            <TextBlock Style="{StaticResource H3}">DTR / RTS 引脚</TextBlock>
+            <TextBlock Style="{StaticResource Body}">底部状态栏的 DTR/RTS 按钮可独立切换。常用于 ESP32 BOOT / STM32 ISP 进入烧录模式。绿底 ON = 拉低，灰底 OFF = 释放。</TextBlock>
+
+            <!-- 快捷发送 -->
+            <TextBlock Style="{StaticResource H2}">⭐ 快捷发送 / 收藏夹</TextBlock>
+            <TextBlock Style="{StaticResource Body}">
+                菜单 "编辑 → 发送收藏夹" 添加常用命令（名称 + HEX 字符串）。
+                返回 Session 即在数据列表上方看到按钮条，一键发送。
+                HEX 收藏不附加行尾，文本收藏默认追加 CRLF。
+                收藏变动会实时同步到所有已开 Session。
+            </TextBlock>
+
+            <!-- 协议解析器 -->
+            <TextBlock Style="{StaticResource H2}">📦 协议解析器</TextBlock>
+            <TextBlock Style="{StaticResource Body}">
+                菜单 "工具 → 协议解析器"：
+            </TextBlock>
+            <TextBlock Style="{StaticResource Body}">
+                1. 左栏选预设或新建协议（已自带 2 个示例：传感器帧 / IMU 帧）
+                <LineBreak/>
+                2. 中栏定义 <Run Text="帧头 HEX" FontWeight="SemiBold"/>（留空 = 不做同步）+ <Run Text="帧长" FontWeight="SemiBold"/>（字节）+ 字段表（名称/偏移/长度/波形通道/类型）
+                <LineBreak/>
+                3. 右栏 <Run Text="解析测试" FontWeight="SemiBold"/>：粘 HEX 即时看解析结果
+                <LineBreak/>
+                4. 点 <Run Text="「应用到会话」" FontWeight="SemiBold" Foreground="{DynamicResource SuccessBrush}"/> 推送到当前活动 Session
+                <LineBreak/>
+                5. 回 Session 点 <Run Text="「解析」" FontWeight="SemiBold"/> 按钮，每收到一帧自动出字段列表
+            </TextBlock>
+            <TextBlock Style="{StaticResource Body}">
+                <Run Text="字段类型" FontWeight="SemiBold"/>：Hex / UInt8 / Int8 / UInt16LE / UInt16BE / Int16LE / Int16BE / UInt32LE / UInt32BE / Int32LE / Int32BE / Float32LE / Float32BE / Ascii
+            </TextBlock>
+            <TextBlock Style="{StaticResource Body}">
+                <Run Text="字段绑波形" FontWeight="SemiBold"/>：字段表里「波形通道」列填 0/1/2... 则该字段的数值会实时送到波形窗口对应通道
+            </TextBlock>
+
+            <!-- 工具菜单 -->
+            <TextBlock Style="{StaticResource H2}">🛠 工具菜单</TextBlock>
+            <TextBlock Style="{StaticResource Body}">
+                • <Run Text="🔒 校验计算器" FontWeight="SemiBold"/>：XOR / ADD / CRC8 / CRC16 / CRC32 / Modbus CRC 一键算
+                <LineBreak/>
+                • <Run Text="📁 文件传输" FontWeight="SemiBold"/>：XMODEM-CRC 发送/接收。和会话共存（独立监听字节）
+                <LineBreak/>
+                • <Run Text="🔥 固件烧录器" FontWeight="SemiBold"/>：包装 esptool.exe (ESP32/ESP8266) / stm32flash.exe (STM32 ISP)。需自备可执行
+                <LineBreak/>
+                • <Run Text="🚌 CAN 总线" FontWeight="SemiBold"/>：SLCAN/LAWICEL 协议，兼容 CANable / CANUSB / candleLight-SLCAN
+                <LineBreak/>
+                • <Run Text="🌐 TCP/UDP 桥" FontWeight="SemiBold"/>：把串口暴露为 TCP Server / Client / UDP，双向字节透传
+                <LineBreak/>
+                • <Run Text="⚙ 宏编辑器" FontWeight="SemiBold"/>：可视化步骤（发送/延时/循环），导入导出 .macro
+                <LineBreak/>
+                • <Run Text="📊 统计面板" FontWeight="SemiBold"/>：当前会话的实时速率（1s/10s/60s 平均 + 峰值）、字节累计、错误计数
+            </TextBlock>
+
+            <!-- 视图菜单 -->
+            <TextBlock Style="{StaticResource H2}">📊 可视化窗口</TextBlock>
+            <TextBlock Style="{StaticResource Body}">
+                菜单 "视图 → 波形/雷达/3D 视图" 打开浮窗：
+                <LineBreak/>
+                • <Run Text="波形" FontWeight="SemiBold"/>：多通道实时折线，自带 Y 轴数值刻度 + X 轴样本计数
+                <LineBreak/>
+                • <Run Text="雷达" FontWeight="SemiBold"/>：极坐标雷达图，多通道同心
+                <LineBreak/>
+                • <Run Text="3D" FontWeight="SemiBold"/>：3D 点云（鼠标拖拽旋转，滚轮缩放）
+            </TextBlock>
+            <TextBlock Style="{StaticResource Body}">
+                数据源：默认从 ASCII 数值拆分（"1.23,4.56,7.89\n" → CH0=1.23, CH1=4.56...）；
+                也可通过 <Run Text="协议解析器字段绑通道" FontWeight="SemiBold"/> 精确控制每条数据进哪个通道。
+            </TextBlock>
+
+            <!-- 快捷键 -->
+            <TextBlock Style="{StaticResource H2}">⌨ 快捷键</TextBlock>
+            <Border Style="{StaticResource Code}">
+                <TextBlock Style="{StaticResource CodeText}" Foreground="{DynamicResource PrimaryTextBrush}">
+                <Run Text="Ctrl+N" Foreground="{DynamicResource AccentBrush}"/><Run Text="          刷新设备列表"/>
+                <LineBreak/>
+                <Run Text="Ctrl+O" Foreground="{DynamicResource AccentBrush}"/><Run Text="          打开日志文件查看"/>
+                <LineBreak/>
+                <Run Text="Ctrl+S" Foreground="{DynamicResource AccentBrush}"/><Run Text="          保存当前 Session 日志"/>
+                <LineBreak/>
+                <Run Text="Ctrl+E" Foreground="{DynamicResource AccentBrush}"/><Run Text="          导出数据（CSV/TXT/JSON）"/>
+                <LineBreak/>
+                <Run Text="Ctrl+L" Foreground="{DynamicResource AccentBrush}"/><Run Text="          清空当前 Session 列表"/>
+                <LineBreak/>
+                <Run Text="Ctrl+Shift+F" Foreground="{DynamicResource AccentBrush}"/><Run Text="    打开发送收藏夹"/>
+                <LineBreak/>
+                <Run Text="Ctrl+Enter" Foreground="{DynamicResource AccentBrush}"/><Run Text="      发送（焦点在发送区时）"/>
+                </TextBlock>
+            </Border>
+
+            <!-- 配置/日志位置 -->
+            <TextBlock Style="{StaticResource H2}">📂 文件位置</TextBlock>
+            <Border Style="{StaticResource Code}">
+                <TextBlock Style="{StaticResource CodeText}">
+                <Run Text="%AppData%\SerialMaster\settings.json" Foreground="{DynamicResource AccentBrush}"/>
+                <LineBreak/>
+                <Run Text="                                    主题、上次端口/波特率"/>
+                <LineBreak/>
+                <Run Text="%LocalAppData%\SerialMaster\protocols.json" Foreground="{DynamicResource AccentBrush}"/>
+                <LineBreak/>
+                <Run Text="                                    协议定义列表"/>
+                <LineBreak/>
+                <Run Text="%LocalAppData%\SerialMaster\favorites.json" Foreground="{DynamicResource AccentBrush}"/>
+                <LineBreak/>
+                <Run Text="                                    快捷发送条目"/>
+                <LineBreak/>
+                <Run Text="%LocalAppData%\SerialMaster\data\" Foreground="{DynamicResource AccentBrush}"/>
+                <LineBreak/>
+                <Run Text="                                    录制按钮的数据落盘"/>
+                <LineBreak/>
+                <Run Text="%LocalAppData%\SerialMaster\logs\" Foreground="{DynamicResource AccentBrush}"/>
+                <LineBreak/>
+                <Run Text="                                    应用日志（异常/Send/Read 错误等都在这）"/>
+                </TextBlock>
+            </Border>
+
+            <!-- 常见问题 -->
+            <TextBlock Style="{StaticResource H2}">🐛 常见问题</TextBlock>
+            <TextBlock Style="{StaticResource H3}">点连接卡很久才报错</TextBlock>
+            <TextBlock Style="{StaticResource Body}">通常是该 COM 口对应的设备/驱动有问题（幽灵端口、USB-Serial 驱动崩）。换一个端口试，或拔插 USB。</TextBlock>
+
+            <TextBlock Style="{StaticResource H3}">发送按钮变白色 / 点了没反应</TextBlock>
+            <TextBlock Style="{StaticResource Body}">某些坏驱动让 WriteAsync 卡死，应用会在 WriteTimeout 后强制超时，按钮自动恢复并提示"写超时 — 设备未响应"。</TextBlock>
+
+            <TextBlock Style="{StaticResource H3}">收到数据全是乱码</TextBlock>
+            <TextBlock Style="{StaticResource Body}">99% 是波特率不匹配。在顶部 toolbar 直接改波特率，无需断开重连。</TextBlock>
+
+            <TextBlock Style="{StaticResource H3}">收不到数据但状态显示已连接</TextBlock>
+            <TextBlock Style="{StaticResource Body}">看右下角 "Rx" 字节数是否在涨。如不涨：① 检查 MCU 是否需要先收命令才回应；② 切到 ASCII 显示看是否有不可打印字符在涌入；③ 看日志 %LocalAppData%\SerialMaster\logs 里是否有 Read transient 警告。</TextBlock>
+
+            <TextBlock Style="{StaticResource H3}">CAN 适配器不工作</TextBlock>
+            <TextBlock Style="{StaticResource Body}">仅支持 SLCAN/LAWICEL 协议（CANable / CANUSB / candleLight 的 SLCAN 固件）。PEAK/Kvaser/ZLG 等需要厂商 DLL，暂不支持。</TextBlock>
+
+            <TextBlock Style="{StaticResource H2}">💡 反馈</TextBlock>
+            <TextBlock Style="{StaticResource Body}">本工具 MIT 开源，欢迎在 GitHub 提 Issue / PR。崩溃报告请把 %LocalAppData%\SerialMaster\logs\ 当天日志附上。</TextBlock>
+
+            <TextBlock Style="{StaticResource Hint}" Margin="0,24,0,8">— 完 —</TextBlock>
+
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

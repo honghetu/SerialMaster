@@ -14,10 +14,12 @@ public static class DependencyInjection
         // Core services
         services.AddSingleton<IDeviceEnumerator, DeviceEnumerator>();
         services.AddSingleton<ISettingsService, SettingsService>();
+        services.AddSingleton<IProtocolDefinitionStore, ProtocolDefinitionStore>();
         services.AddTransient<ISerialPortService, SerialPortService>();
 
         // UI services
         services.AddSingleton<ThemeService>();
+        services.AddSingleton<SerialMaster.UI.Services.FavoritesService>();
 
         // ViewModels
         services.AddSingleton<DeviceManagerViewModel>();

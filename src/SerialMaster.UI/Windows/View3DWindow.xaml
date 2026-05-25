@@ -1,0 +1,10 @@
+<Window x:Class="SerialMaster.UI.Windows.View3DWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ctrl="clr-namespace:SerialMaster.UI.Controls"
+        Title="3D 点云视图" Height="500" Width="600"
+        MinHeight="350" MinWidth="400"
+        WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource PrimaryBackgroundBrush}">
+    <ctrl:View3DControl x:Name="View3DCanvas"/>
+</Window>

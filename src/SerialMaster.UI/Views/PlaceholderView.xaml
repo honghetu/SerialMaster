@@ -1,0 +1,32 @@
+<UserControl x:Class="SerialMaster.UI.Views.PlaceholderView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Grid Background="{DynamicResource PrimaryBackgroundBrush}">
+        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center"
+                    MaxWidth="480" Margin="40">
+            <TextBlock Text="{Binding TabTitle}" FontSize="22" FontWeight="SemiBold"
+                       Foreground="{DynamicResource PrimaryTextBrush}"
+                       HorizontalAlignment="Center" Margin="0,0,0,12"/>
+
+            <Border Background="{DynamicResource SurfaceBrush}"
+                    BorderBrush="{DynamicResource SurfaceBorderBrush}"
+                    BorderThickness="1" CornerRadius="6" Padding="20" Margin="0,0,0,16">
+                <TextBlock Text="{Binding Description}"
+                           Foreground="{DynamicResource SecondaryTextBrush}"
+                           FontSize="14" TextWrapping="Wrap" LineHeight="24"
+                           TextAlignment="Center"/>
+            </Border>
+
+            <Border Background="{DynamicResource SecondaryBackgroundBrush}"
+                    BorderBrush="{DynamicResource SurfaceBorderBrush}"
+                    BorderThickness="1" CornerRadius="4" Padding="10,6"
+                    HorizontalAlignment="Center">
+                <TextBlock Foreground="{DynamicResource MutedTextBrush}" FontSize="13">
+                    <Run Text="计划上线："/>
+                    <Run Text="{Binding Phase}" Foreground="{DynamicResource AccentBrush}" FontWeight="SemiBold"/>
+                </TextBlock>
+            </Border>
+        </StackPanel>
+    </Grid>
+</UserControl>

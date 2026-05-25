@@ -44,17 +44,49 @@ public partial class MainViewModel : ObservableObject
         IsLightTheme = _themeService.CurrentTheme == "Light";
 
         DeviceManager.DeviceConnectRequested += OnDeviceConnectRequested;
+
+        var favorites = _serviceProvider.GetRequiredService<SerialMaster.UI.Services.FavoritesService>();
+        favorites.Changed += (_, _) =>
+        {
+            var items = favorites.Load();
+            Application.Current?.Dispatcher.BeginInvoke(() =>
+            {
+                foreach (var s in Sessions.OfType<SessionViewModel>())
+                    s.RefreshQuickSends(items);
+            });
+        };
     }
 
-    private void OnDeviceConnectRequested(object? sender, DeviceInfo device)
+    private async void OnDeviceConnectRequested(object? sender, DeviceInfo device)
     {
         if (device.IsConnected)
         {
             var serialService = _serviceProvider.GetRequiredService<ISerialPortService>();
-            var session = new SessionViewModel(serialService, device);
+            var connectedStatus = device.StatusText;
+            device.StatusText = "正在连接...";
+            device.HasError = false;
 
-            Sessions.Add(session);
-            ActiveSession = session;
+            SessionViewModel? session = null;
+            try
+            {
+                // Open is synchronous and may block several seconds on flaky USB-Serial drivers.
+                // Push it to a background thread so the UI stays responsive.
+                session = await Task.Run(() => new SessionViewModel(serialService, device));
+
+                var favoritesService = _serviceProvider.GetRequiredService<SerialMaster.UI.Services.FavoritesService>();
+                session.RefreshQuickSends(favoritesService.Load());
+
+                device.StatusText = connectedStatus;
+                Sessions.Add(session);
+                ActiveSession = session;
+            }
+            catch (Exception ex)
+            {
+                device.IsConnected = false;
+                device.HasError = true;
+                device.StatusText = $"连接失败: {ShortenError(ex.Message)}";
+                try { serialService.Dispose(); } catch { }
+            }
         }
         else
         {
@@ -67,6 +99,21 @@ public partial class MainViewModel : ObservableObject
                 Sessions.Remove(session);
             }
         }
+    }
+
+    private static string ShortenError(string msg)
+    {
+        if (string.IsNullOrEmpty(msg)) return "未知错误";
+        // Strip CR/LF, cap length so it fits the device list line
+        msg = msg.Replace("\r", " ").Replace("\n", " ").Trim();
+        return msg.Length > 80 ? msg[..80] + "..." : msg;
+    }
+
+    [RelayCommand]
+    private void NewConnection()
+    {
+        // Focus device manager and refresh; selecting + connecting is then one click for the user.
+        DeviceManager.RefreshDevicesCommand.Execute(null);
     }
 
     [RelayCommand]
@@ -100,6 +147,39 @@ public partial class MainViewModel : ObservableObject
                 break;
             case LogViewerSession lvs:
                 lvs.Close();
+                break;
+            case PlaceholderSession ps:
+                ps.Close();
+                break;
+            case ChecksumViewModel cs:
+                cs.Close();
+                break;
+            case FavoritesViewModel fv:
+                fv.Close();
+                break;
+            case ProtocolParserViewModel pp:
+                pp.Close();
+                break;
+            case MacroEditorViewModel me:
+                me.Close();
+                break;
+            case FileTransferViewModel ft:
+                ft.Close();
+                break;
+            case FirmwareBurnerViewModel fb:
+                fb.Close();
+                break;
+            case CanBusViewModel cb:
+                cb.Close();
+                break;
+            case NetworkBridgeViewModel nb:
+                nb.Close();
+                break;
+            case StatisticsViewModel sv:
+                sv.Close();
+                break;
+            case HelpViewModel hv:
+                hv.Close();
                 break;
         }
 
@@ -319,62 +399,274 @@ public partial class MainViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void OpenFavorites() => MessageBox.Show("发送收藏夹将在 Phase 2 实现", "提示",
-        MessageBoxButton.OK, MessageBoxImage.Information);
+    private void OpenFavorites()
+    {
+        var favoritesService = _serviceProvider.GetRequiredService<SerialMaster.UI.Services.FavoritesService>();
+        var session = new FavoritesViewModel(
+            favoritesService,
+            async data =>
+            {
+                if (ActiveSession is SessionViewModel svm)
+                    await svm.SendHexDataAsync(data);
+                else
+                    MessageBox.Show("没有活动的串口会话", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+            },
+            () => Sessions.Remove(Sessions.FirstOrDefault(s => s is FavoritesViewModel)));
+        Sessions.Add(session);
+        ActiveSession = session;
+    }
 
     [RelayCommand]
-    private void ToggleWaveform() => MessageBox.Show("波形视图将在 Phase 3 实现", "提示",
-        MessageBoxButton.OK, MessageBoxImage.Information);
+    private void ToggleWaveform()
+    {
+        if (ActiveSession is SessionViewModel svm)
+            svm.ToggleWaveformCommand.Execute(null);
+    }
 
     [RelayCommand]
-    private void ToggleRadar() => MessageBox.Show("雷达视图将在 Phase 3 实现", "提示",
-        MessageBoxButton.OK, MessageBoxImage.Information);
+    private void ToggleRadar()
+    {
+        if (ActiveSession is SessionViewModel svm)
+            svm.ToggleRadarCommand.Execute(null);
+    }
 
     [RelayCommand]
-    private void ToggleView3D() => MessageBox.Show("3D 视图将在 Phase 3 实现", "提示",
-        MessageBoxButton.OK, MessageBoxImage.Information);
+    private void ToggleView3D()
+    {
+        if (ActiveSession is SessionViewModel svm)
+            svm.ToggleView3DCommand.Execute(null);
+    }
 
     [RelayCommand]
-    private void ToggleStatistics() => MessageBox.Show("统计面板将在 Phase 2 实现", "提示",
-        MessageBoxButton.OK, MessageBoxImage.Information);
+    private void ToggleStatistics()
+    {
+        var existing = Sessions.OfType<StatisticsViewModel>().FirstOrDefault();
+        if (existing != null) { ActiveSession = existing; return; }
+
+        var session = new StatisticsViewModel(
+            () => ActiveSession as SessionViewModel
+                  ?? Sessions.OfType<SessionViewModel>().FirstOrDefault(),
+            () => Sessions.Remove(Sessions.FirstOrDefault(s => s is StatisticsViewModel)!));
+        Sessions.Add(session);
+        ActiveSession = session;
+    }
 
     [RelayCommand]
-    private void ToggleTerminal() => MessageBox.Show("终端模式将在 Phase 2 实现", "提示",
-        MessageBoxButton.OK, MessageBoxImage.Information);
+    private void ToggleTerminal()
+    {
+        if (ActiveSession is SessionViewModel svm)
+            svm.ToggleTerminalModeCommand.Execute(null);
+    }
 
     [RelayCommand]
-    private void OpenChecksum() => MessageBox.Show("校验计算器将在 Phase 2 实现", "提示",
-        MessageBoxButton.OK, MessageBoxImage.Information);
+    private void OpenChecksum()
+    {
+        var session = new ChecksumViewModel(
+            () => Sessions.Remove(Sessions.FirstOrDefault(s => s is ChecksumViewModel)));
+        Sessions.Add(session);
+        ActiveSession = session;
+    }
 
     [RelayCommand]
-    private void OpenParser() => MessageBox.Show("协议解析器将在 Phase 4 实现", "提示",
-        MessageBoxButton.OK, MessageBoxImage.Information);
+    private void OpenParser()
+    {
+        var existing = Sessions.OfType<ProtocolParserViewModel>().FirstOrDefault();
+        if (existing != null) { ActiveSession = existing; return; }
+
+        var store = _serviceProvider.GetRequiredService<IProtocolDefinitionStore>();
+        var session = new ProtocolParserViewModel(
+            store,
+            () => Sessions.OfType<SessionViewModel>().FirstOrDefault(s => s == ActiveSession)
+                  ?? Sessions.OfType<SessionViewModel>().FirstOrDefault(),
+            () => Sessions.Remove(Sessions.FirstOrDefault(s => s is ProtocolParserViewModel)!));
+        Sessions.Add(session);
+        ActiveSession = session;
+    }
 
     [RelayCommand]
-    private void OpenMacro() => MessageBox.Show("宏编辑器将在 Phase 4 实现", "提示",
-        MessageBoxButton.OK, MessageBoxImage.Information);
+    private void OpenMacro()
+    {
+        var session = new MacroEditorViewModel(
+            async data =>
+            {
+                if (ActiveSession is SessionViewModel svm)
+                    await svm.SendHexDataAsync(data);
+                else
+                    MessageBox.Show("没有活动的串口会话", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+            },
+            () => Sessions.Remove(Sessions.FirstOrDefault(s => s is MacroEditorViewModel)));
+        Sessions.Add(session);
+        ActiveSession = session;
+    }
 
     [RelayCommand]
-    private void OpenFileTransfer() => MessageBox.Show("文件传输将在 Phase 4 实现", "提示",
-        MessageBoxButton.OK, MessageBoxImage.Information);
+    private void OpenFileTransfer()
+    {
+        var session = new FileTransferViewModel(
+            () => ActiveSession is SessionViewModel svm ? svm.SerialService : null,
+            () => Sessions.Remove(Sessions.FirstOrDefault(s => s is FileTransferViewModel)));
+        Sessions.Add(session);
+        ActiveSession = session;
+    }
 
     [RelayCommand]
-    private void ResetDtr() => MessageBox.Show("引脚控制将在 Phase 2 实现", "提示",
-        MessageBoxButton.OK, MessageBoxImage.Information);
+    private void OpenBurner()
+    {
+        var existing = Sessions.OfType<FirmwareBurnerViewModel>().FirstOrDefault();
+        if (existing != null) { ActiveSession = existing; return; }
+
+        var enumerator = _serviceProvider.GetRequiredService<IDeviceEnumerator>();
+        var session = new FirmwareBurnerViewModel(
+            enumerator,
+            () => Sessions.Remove(Sessions.FirstOrDefault(s => s is FirmwareBurnerViewModel)!));
+        Sessions.Add(session);
+        ActiveSession = session;
+    }
 
     [RelayCommand]
-    private void BootRts() => MessageBox.Show("引脚控制将在 Phase 2 实现", "提示",
-        MessageBoxButton.OK, MessageBoxImage.Information);
+    private void OpenCanBus()
+    {
+        var existing = Sessions.OfType<CanBusViewModel>().FirstOrDefault();
+        if (existing != null) { ActiveSession = existing; return; }
+
+        var enumerator = _serviceProvider.GetRequiredService<IDeviceEnumerator>();
+        var serial = _serviceProvider.GetRequiredService<ISerialPortService>();
+        var session = new CanBusViewModel(
+            enumerator, serial,
+            () => Sessions.Remove(Sessions.FirstOrDefault(s => s is CanBusViewModel)!));
+        Sessions.Add(session);
+        ActiveSession = session;
+    }
+
+    [RelayCommand]
+    private void OpenBridge()
+    {
+        var existing = Sessions.OfType<NetworkBridgeViewModel>().FirstOrDefault();
+        if (existing != null) { ActiveSession = existing; return; }
+
+        var enumerator = _serviceProvider.GetRequiredService<IDeviceEnumerator>();
+        var serial = _serviceProvider.GetRequiredService<ISerialPortService>();
+        var session = new NetworkBridgeViewModel(
+            enumerator, serial,
+            () => Sessions.Remove(Sessions.FirstOrDefault(s => s is NetworkBridgeViewModel)!));
+        Sessions.Add(session);
+        ActiveSession = session;
+    }
+
+    [RelayCommand]
+    private void ResetDtr()
+    {
+        if (ActiveSession is SessionViewModel svm)
+            svm.ToggleDtrCommand.Execute(null);
+    }
+
+    [RelayCommand]
+    private void BootRts()
+    {
+        if (ActiveSession is SessionViewModel svm)
+            svm.ToggleRtsCommand.Execute(null);
+    }
+
+    private void OpenPlaceholder(string feature, string icon, string phase, string description)
+    {
+        var session = new PlaceholderSession(feature, icon, phase, description,
+            () => Sessions.Remove(Sessions.FirstOrDefault(s =>
+                s is PlaceholderSession ps && ps.TabTitle == $"{icon} {feature}")));
+
+        Sessions.Add(session);
+        ActiveSession = session;
+    }
+
+    [RelayCommand]
+    private async Task CheckForUpdates()
+    {
+        var svc = new UpdateCheckService();
+        var current = typeof(MainViewModel).Assembly.GetName().Version ?? new Version(0, 0);
+        var info = await svc.CheckAsync(current);
+
+        if (!string.IsNullOrEmpty(info.Error))
+        {
+            MessageBox.Show($"检查更新失败:\n{info.Error}\n\n你也可以直接访问\n{UpdateCheckService.ReleasesPageUrl}",
+                "SerialMaster — 检查更新", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        if (info.HasUpdate)
+        {
+            var msg = $"发现新版本 v{info.LatestVersion}\n当前版本 v{info.CurrentVersion?.ToString(3)}\n\n是否打开下载页?";
+            if (MessageBox.Show(msg, "SerialMaster — 新版本可用",
+                MessageBoxButton.YesNo, MessageBoxImage.Information) == MessageBoxResult.Yes)
+            {
+                OpenUrl(info.ReleaseUrl ?? UpdateCheckService.ReleasesPageUrl);
+            }
+        }
+        else
+        {
+            MessageBox.Show($"已是最新版本 v{info.CurrentVersion?.ToString(3)}",
+                "SerialMaster — 检查更新", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+    }
+
+    public async Task CheckForUpdatesSilentAsync()
+    {
+        // Called from App on startup; only notifies if a new version exists, never on errors.
+        try
+        {
+            await Task.Delay(2500);  // let UI settle first
+            var svc = new UpdateCheckService();
+            var current = typeof(MainViewModel).Assembly.GetName().Version ?? new Version(0, 0);
+            var info = await svc.CheckAsync(current);
+            if (!info.HasUpdate || info.LatestVersion == null) return;
+
+            await Application.Current.Dispatcher.InvokeAsync(() =>
+            {
+                var ans = MessageBox.Show(
+                    $"SerialMaster 有新版本 v{info.LatestVersion}（你当前 v{info.CurrentVersion?.ToString(3)}）\n\n是否打开下载页?",
+                    "SerialMaster — 后台检查发现新版本",
+                    MessageBoxButton.YesNo, MessageBoxImage.Information);
+                if (ans == MessageBoxResult.Yes)
+                    OpenUrl(info.ReleaseUrl ?? UpdateCheckService.ReleasesPageUrl);
+            });
+        }
+        catch { /* silent — startup check must never crash */ }
+    }
+
+    private static void OpenUrl(string url)
+    {
+        try
+        {
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = url, UseShellExecute = true
+            });
+        }
+        catch { }
+    }
+
+    [RelayCommand]
+    private void OpenHelp()
+    {
+        var existing = Sessions.OfType<HelpViewModel>().FirstOrDefault();
+        if (existing != null) { ActiveSession = existing; return; }
+
+        var help = new HelpViewModel(
+            () => Sessions.Remove(Sessions.FirstOrDefault(s => s is HelpViewModel)!));
+        Sessions.Add(help);
+        ActiveSession = help;
+    }
 
     [RelayCommand]
     private void About()
     {
-        MessageBox.Show("SerialMaster 串口大师 v1.0.0\n\n" +
-                        "面向嵌入式开发的串口调试工具\n" +
-                        "WPF + .NET 8 | MVVM | AvalonDock\n\n" +
-                        "Phase 1 MVP",
-                        "关于 SerialMaster",
-                        MessageBoxButton.OK, MessageBoxImage.Information);
+        var asm = typeof(MainViewModel).Assembly;
+        var version = asm.GetName().Version?.ToString(3) ?? "?";
+        MessageBox.Show(
+            $"SerialMaster 串口大师 v{version}\n\n" +
+            "面向嵌入式开发的多功能串口调试工具\n" +
+            "WPF + .NET 8 | MVVM\n\n" +
+            "https://github.com/  (待发布)",
+            "关于 SerialMaster",
+            MessageBoxButton.OK, MessageBoxImage.Information);
     }
 
     private static string GetSessionTitle(ObservableObject? session)

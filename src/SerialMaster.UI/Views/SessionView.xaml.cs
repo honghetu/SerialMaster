@@ -1,3 +1,4 @@
+using System.Windows;
 using System.Windows.Controls;
 
 namespace SerialMaster.UI.Views;

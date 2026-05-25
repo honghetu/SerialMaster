@@ -1,0 +1,168 @@
+<UserControl x:Class="SerialMaster.UI.Views.CanBusView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:conv="clr-namespace:SerialMaster.UI.Converters">
+    <UserControl.Resources>
+        <conv:BytesToHexConverter x:Key="BytesToHex"/>
+        <conv:InvertBoolConverter x:Key="InvertBool"/>
+    </UserControl.Resources>
+    <Grid Margin="10">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="280"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <Border Grid.Column="0" Background="{DynamicResource SurfaceBrush}"
+                BorderBrush="{DynamicResource SurfaceBorderBrush}"
+                BorderThickness="1" Padding="12" CornerRadius="4">
+            <StackPanel>
+                <TextBlock Text="🚌 CAN (SLCAN)" FontSize="16" FontWeight="SemiBold"
+                           Foreground="{DynamicResource PrimaryTextBrush}" Margin="0,0,0,12"/>
+
+                <TextBlock Text="串口" FontSize="11" Foreground="{DynamicResource SecondaryTextBrush}"/>
+                <Grid Margin="0,2,0,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <ComboBox ItemsSource="{Binding AvailablePorts}"
+                              SelectedItem="{Binding SelectedPort}"/>
+                    <Button Grid.Column="1" Content="↻" Width="28" Margin="4,0,0,0"
+                            Command="{Binding RefreshPortsCommand}"/>
+                </Grid>
+
+                <TextBlock Text="串口波特率" FontSize="11" Foreground="{DynamicResource SecondaryTextBrush}"/>
+                <ComboBox ItemsSource="{Binding SerialBaudRates}"
+                          SelectedItem="{Binding SerialBaudRate}" Margin="0,2,0,10"/>
+
+                <TextBlock Text="CAN 总线波特率" FontSize="11" Foreground="{DynamicResource SecondaryTextBrush}"/>
+                <ComboBox ItemsSource="{Binding CanBitrates}"
+                          SelectedIndex="{Binding SelectedCanBitrateIndex}"
+                          Margin="0,2,0,10">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock>
+                                <Run Text="{Binding Kbps}"/><Run Text=" kbps ("/><Run Text="{Binding Cmd}"/><Run Text=")"/>
+                            </TextBlock>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+
+                <StackPanel Orientation="Horizontal" Margin="0,4,0,12">
+                    <Button Content="打开" Width="80" Height="30"
+                            Background="{DynamicResource SuccessBrush}" Foreground="#1E1E2E"
+                            BorderThickness="0"
+                            Command="{Binding OpenAdapterCommand}"
+                            IsEnabled="{Binding IsOpen, Converter={StaticResource InvertBool}}"/>
+                    <Button Content="关闭" Width="80" Height="30" Margin="6,0,0,0"
+                            Background="{DynamicResource ErrorBrush}" Foreground="{DynamicResource PrimaryBackgroundBrush}"
+                            BorderThickness="0"
+                            Command="{Binding CloseAdapterCommand}"
+                            IsEnabled="{Binding IsOpen}"/>
+                </StackPanel>
+
+                <Border Background="{DynamicResource SecondaryBackgroundBrush}"
+                        BorderBrush="{DynamicResource SurfaceBorderBrush}"
+                        BorderThickness="1" Padding="8" Margin="0,0,0,12" CornerRadius="3">
+                    <StackPanel>
+                        <TextBlock Text="发送" FontWeight="SemiBold" FontSize="12"
+                                   Foreground="{DynamicResource PrimaryTextBrush}" Margin="0,0,0,6"/>
+                        <Grid Margin="0,0,0,6">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="60"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="ID (HEX)" VerticalAlignment="Center" FontSize="11"
+                                       Foreground="{DynamicResource SecondaryTextBrush}"/>
+                            <TextBox Grid.Column="1" Text="{Binding SendId, UpdateSourceTrigger=PropertyChanged}"
+                                     FontFamily="Consolas"/>
+                        </Grid>
+                        <Grid Margin="0,0,0,6">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="60"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="数据" VerticalAlignment="Center" FontSize="11"
+                                       Foreground="{DynamicResource SecondaryTextBrush}"/>
+                            <TextBox Grid.Column="1" Text="{Binding SendData, UpdateSourceTrigger=PropertyChanged}"
+                                     FontFamily="Consolas"/>
+                        </Grid>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                            <CheckBox Content="扩展帧 (29bit)" IsChecked="{Binding SendExtended}"
+                                      Foreground="{DynamicResource SecondaryTextBrush}" FontSize="11"/>
+                            <CheckBox Content="RTR" IsChecked="{Binding SendRtr}" Margin="12,0,0,0"
+                                      Foreground="{DynamicResource SecondaryTextBrush}" FontSize="11"/>
+                        </StackPanel>
+                        <Button Content="发送帧" HorizontalAlignment="Stretch" Height="28"
+                                Background="{DynamicResource AccentBrush}"
+                                Foreground="{DynamicResource PrimaryBackgroundBrush}"
+                                BorderThickness="0"
+                                Command="{Binding SendFrameCommand}"/>
+                    </StackPanel>
+                </Border>
+
+                <TextBlock FontSize="11" Foreground="{DynamicResource MutedTextBrush}" TextWrapping="Wrap">
+                    <Run Text="兼容 CANable / CANUSB / candleLight-SLCAN / 任何 LAWICEL 协议适配器。"/>
+                </TextBlock>
+            </StackPanel>
+        </Border>
+
+        <Border Grid.Column="1" Background="{DynamicResource PrimaryBackgroundBrush}"
+                BorderBrush="{DynamicResource SurfaceBorderBrush}"
+                BorderThickness="1" Margin="10,0,0,0" CornerRadius="4">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Border Grid.Row="0" Background="{DynamicResource SecondaryBackgroundBrush}" Padding="10,6">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="CAN 帧" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource PrimaryTextBrush}"/>
+                        <TextBlock Text="  接收:" Margin="20,0,0,0" FontSize="11"
+                                   Foreground="{DynamicResource SecondaryTextBrush}"/>
+                        <TextBlock Text="{Binding RxFrameCount}" Margin="4,0,0,0"
+                                   FontFamily="Consolas" FontSize="11"
+                                   Foreground="{DynamicResource SuccessBrush}"/>
+                        <Button Content="清空" Width="60" Margin="20,0,0,0" Height="22"
+                                Command="{Binding ClearFramesCommand}"/>
+                    </StackPanel>
+                </Border>
+                <ListView Grid.Row="1" ItemsSource="{Binding Frames}"
+                          Background="{DynamicResource PrimaryBackgroundBrush}"
+                          BorderThickness="0"
+                          VirtualizingStackPanel.IsVirtualizing="True">
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn Header="时间" Width="100"
+                                            DisplayMemberBinding="{Binding Timestamp, StringFormat='HH:mm:ss.fff'}"/>
+                            <GridViewColumn Header="类型" Width="100"
+                                            DisplayMemberBinding="{Binding Kind}"/>
+                            <GridViewColumn Header="ID" Width="100">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock FontFamily="Consolas"
+                                                   Foreground="{DynamicResource AccentBrush}">
+                                            <Run Text="{Binding Id, StringFormat='{}{0:X}'}"/>
+                                        </TextBlock>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn Header="DLC" Width="50"
+                                            DisplayMemberBinding="{Binding Dlc}"/>
+                            <GridViewColumn Header="数据 (HEX)" Width="280">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Data, Converter={StaticResource BytesToHex}}"
+                                                   FontFamily="Consolas"
+                                                   Foreground="{DynamicResource HexDataBrush}"/>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

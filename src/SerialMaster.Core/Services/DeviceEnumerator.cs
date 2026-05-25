@@ -9,13 +9,31 @@ namespace SerialMaster.Core.Services;
 public sealed class DeviceEnumerator : IDeviceEnumerator, IDisposable
 {
     private CancellationTokenSource? _watchCts;
+    private Action<IReadOnlyList<DeviceInfo>>? _watchCallback;
+
+    // Cache WMI descriptions; refresh only when the set of port names changes.
+    private string _cachedPortKey = string.Empty;
+    private Dictionary<string, string> _cachedDescriptions = new(StringComparer.OrdinalIgnoreCase);
+    private readonly object _cacheLock = new();
 
     public IReadOnlyList<DeviceInfo> GetAvailablePorts()
     {
-        var ports = new List<DeviceInfo>();
-        var descriptions = GetPortDescriptions();
+        var portNames = SerialPort.GetPortNames();
+        var portKey = string.Join(",", portNames.OrderBy(p => p));
 
-        foreach (string portName in SerialPort.GetPortNames())
+        Dictionary<string, string> descriptions;
+        lock (_cacheLock)
+        {
+            if (portKey != _cachedPortKey)
+            {
+                _cachedDescriptions = GetPortDescriptions();
+                _cachedPortKey = portKey;
+            }
+            descriptions = _cachedDescriptions;
+        }
+
+        var ports = new List<DeviceInfo>(portNames.Length);
+        foreach (string portName in portNames)
         {
             descriptions.TryGetValue(portName, out string? desc);
             ports.Add(new DeviceInfo
@@ -82,6 +100,7 @@ public sealed class DeviceEnumerator : IDeviceEnumerator, IDisposable
     public void StartWatching(Action<IReadOnlyList<DeviceInfo>> onChanged, int intervalMs = 2000)
     {
         StopWatching();
+        _watchCallback = onChanged;
         _watchCts = new CancellationTokenSource();
         var token = _watchCts.Token;
 
@@ -92,7 +111,7 @@ public sealed class DeviceEnumerator : IDeviceEnumerator, IDisposable
                 try
                 {
                     var ports = GetAvailablePorts();
-                    onChanged(ports);
+                    _watchCallback?.Invoke(ports);
                     await Task.Delay(intervalMs, token);
                 }
                 catch (OperationCanceledException) { break; }
@@ -106,6 +125,7 @@ public sealed class DeviceEnumerator : IDeviceEnumerator, IDisposable
         _watchCts?.Cancel();
         _watchCts?.Dispose();
         _watchCts = null;
+        _watchCallback = null;  // release any captured VM reference
     }
 
     public void Dispose() => StopWatching();

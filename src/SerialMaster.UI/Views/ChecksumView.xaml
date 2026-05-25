@@ -1,0 +1,102 @@
+<UserControl x:Class="SerialMaster.UI.Views.ChecksumView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Grid Background="{DynamicResource PrimaryBackgroundBrush}">
+        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center"
+                    Width="500" Margin="40">
+            <TextBlock Text="校验计算器" FontSize="20" FontWeight="SemiBold"
+                       Foreground="{DynamicResource PrimaryTextBrush}"
+                       HorizontalAlignment="Center" Margin="0,0,0,20"/>
+
+            <TextBlock Text="输入数据（HEX 以空格分隔，或直接输入文本）"
+                       Foreground="{DynamicResource SecondaryTextBrush}"
+                       FontSize="12" Margin="0,0,0,6"/>
+
+            <TextBox Text="{Binding InputHex, UpdateSourceTrigger=PropertyChanged}"
+                     MinHeight="80" AcceptsReturn="True"
+                     Background="{DynamicResource SurfaceBrush}"
+                     Foreground="{DynamicResource PrimaryTextBrush}"
+                     BorderBrush="{DynamicResource SurfaceBorderBrush}"
+                     FontFamily="Consolas" FontSize="14"
+                     Padding="10" Margin="0,0,0,12"/>
+
+            <Button Content="计算校验值" Width="120" Margin="0,0,0,16"
+                    Command="{Binding ComputeCommand}"
+                    Background="{DynamicResource AccentBrush}"
+                    Foreground="{DynamicResource PrimaryBackgroundBrush}"
+                    FontWeight="SemiBold"/>
+
+            <Grid>
+                <Grid.Resources>
+                    <Style TargetType="Border">
+                        <Setter Property="Background" Value="{DynamicResource SurfaceBrush}"/>
+                        <Setter Property="BorderBrush" Value="{DynamicResource SurfaceBorderBrush}"/>
+                        <Setter Property="BorderThickness" Value="1"/>
+                        <Setter Property="CornerRadius" Value="4"/>
+                        <Setter Property="Padding" Value="12,8"/>
+                        <Setter Property="Margin" Value="0,0,0,6"/>
+                    </Style>
+                </Grid.Resources>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Margin="0,0,3,0">
+                    <Border>
+                        <Grid>
+                            <TextBlock Text="XOR" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12"/>
+                            <TextBlock Text="{Binding ResultXor}" FontSize="20" FontWeight="Bold"
+                                       Foreground="{DynamicResource HexDataBrush}" FontFamily="Consolas"
+                                       HorizontalAlignment="Right"/>
+                        </Grid>
+                    </Border>
+                    <Border>
+                        <Grid>
+                            <TextBlock Text="ADD (Sum)" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12"/>
+                            <TextBlock Text="{Binding ResultAdd}" FontSize="20" FontWeight="Bold"
+                                       Foreground="{DynamicResource HexDataBrush}" FontFamily="Consolas"
+                                       HorizontalAlignment="Right"/>
+                        </Grid>
+                    </Border>
+                    <Border>
+                        <Grid>
+                            <TextBlock Text="CRC-8" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12"/>
+                            <TextBlock Text="{Binding ResultCrc8}" FontSize="20" FontWeight="Bold"
+                                       Foreground="{DynamicResource HexDataBrush}" FontFamily="Consolas"
+                                       HorizontalAlignment="Right"/>
+                        </Grid>
+                    </Border>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Margin="3,0,0,0">
+                    <Border>
+                        <Grid>
+                            <TextBlock Text="CRC-16" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12"/>
+                            <TextBlock Text="{Binding ResultCrc16}" FontSize="20" FontWeight="Bold"
+                                       Foreground="{DynamicResource HexDataBrush}" FontFamily="Consolas"
+                                       HorizontalAlignment="Right"/>
+                        </Grid>
+                    </Border>
+                    <Border>
+                        <Grid>
+                            <TextBlock Text="CRC-32" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12"/>
+                            <TextBlock Text="{Binding ResultCrc32}" FontSize="20" FontWeight="Bold"
+                                       Foreground="{DynamicResource HexDataBrush}" FontFamily="Consolas"
+                                       HorizontalAlignment="Right"/>
+                        </Grid>
+                    </Border>
+                    <Border>
+                        <Grid>
+                            <TextBlock Text="Modbus CRC" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12"/>
+                            <TextBlock Text="{Binding ResultModbus}" FontSize="20" FontWeight="Bold"
+                                       Foreground="{DynamicResource HexDataBrush}" FontFamily="Consolas"
+                                       HorizontalAlignment="Right"/>
+                        </Grid>
+                    </Border>
+                </StackPanel>
+            </Grid>
+        </StackPanel>
+    </Grid>
+</UserControl>

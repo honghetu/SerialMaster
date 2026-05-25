@@ -5,8 +5,12 @@
 
     <UserControl.Resources>
         <conv:BytesToHexConverter x:Key="BytesToHex"/>
+        <conv:BytesToAsciiConverter x:Key="BytesToAscii"/>
         <conv:StatusToIconConverter x:Key="StatusToIcon"/>
         <conv:DirectionToBrushConverter x:Key="DirToBrush"/>
+        <conv:BoolToVisibilityConverter x:Key="BoolToVis"/>
+        <conv:SendStatusKindToBrushConverter x:Key="SendStatusBrush"/>
+        <conv:DisplayModeToVisibilityConverter x:Key="ModeToVis"/>
     </UserControl.Resources>
 
     <Grid>
@@ -14,82 +18,348 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
+        <!-- HEX Data ListView -->
         <ListView Grid.Row="0" ItemsSource="{Binding Records}"
                   Background="{DynamicResource SecondaryBackgroundBrush}"
                   VirtualizingStackPanel.IsVirtualizing="True"
-                  VirtualizingStackPanel.VirtualizationMode="Recycling">
+                  VirtualizingStackPanel.VirtualizationMode="Recycling"
+                  ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                  HorizontalContentAlignment="Stretch"
+                  Visibility="{Binding CurrentDisplayMode, Converter={StaticResource ModeToVis}, ConverterParameter=Hex}">
             <ListView.ItemTemplate>
                 <DataTemplate>
-                    <Grid Margin="4,1" VerticalAlignment="Center">
+                    <Grid Margin="4,1" VerticalAlignment="Top" HorizontalAlignment="Stretch">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="30"/>
                             <ColumnDefinition Width="120"/>
-                            <ColumnDefinition Width="24"/>
+                            <ColumnDefinition Width="68"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-
-                        <TextBlock Grid.Column="0"
-                                   Text="{Binding Status, Converter={StaticResource StatusToIcon}}"
-                                   FontSize="11" VerticalAlignment="Center"
-                                   HorizontalAlignment="Center"/>
-
-                        <TextBlock Grid.Column="1"
-                                   Text="{Binding Timestamp, StringFormat='HH:mm:ss.fff'}"
+                        <TextBlock Grid.Column="0" Text="{Binding Status, Converter={StaticResource StatusToIcon}}"
+                                   FontSize="11" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,2,0,0"/>
+                        <TextBlock Grid.Column="1" Text="{Binding Timestamp, StringFormat='HH:mm:ss.fff'}"
                                    Foreground="{DynamicResource SecondaryTextBrush}"
-                                   FontFamily="Consolas" FontSize="12"
-                                   VerticalAlignment="Center"/>
-
-                        <TextBlock Grid.Column="2"
-                                   Text="{Binding Direction}"
+                                   FontFamily="Consolas" FontSize="12" VerticalAlignment="Top" Margin="0,2,0,0"/>
+                        <TextBlock Grid.Column="2" Text="{Binding Direction, StringFormat='{}{0}:'}"
                                    Foreground="{Binding Direction, Converter={StaticResource DirToBrush}}"
-                                   FontWeight="Bold" FontSize="14"
-                                   VerticalAlignment="Center"/>
-
-                        <TextBlock Grid.Column="3"
-                                   Text="{Binding Data, Converter={StaticResource BytesToHex}}"
+                                   FontWeight="Bold" FontSize="12" VerticalAlignment="Top" Margin="0,2,0,0"/>
+                        <TextBlock Grid.Column="3" Text="{Binding Data, Converter={StaticResource BytesToHex}}"
                                    Foreground="{DynamicResource HexDataBrush}"
                                    FontFamily="Consolas" FontSize="12"
-                                   TextWrapping="NoWrap" VerticalAlignment="Center"/>
+                                   TextWrapping="Wrap" VerticalAlignment="Top"/>
                     </Grid>
                 </DataTemplate>
             </ListView.ItemTemplate>
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                    <Setter Property="Padding" Value="0"/>
+                </Style>
+            </ListView.ItemContainerStyle>
         </ListView>
 
-        <Border Grid.Row="1" BorderBrush="{DynamicResource SurfaceBorderBrush}"
+        <!-- ASCII Data ListView -->
+        <ListView Grid.Row="0" ItemsSource="{Binding Records}"
+                  Background="{DynamicResource SecondaryBackgroundBrush}"
+                  VirtualizingStackPanel.IsVirtualizing="True"
+                  ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                  HorizontalContentAlignment="Stretch"
+                  Visibility="{Binding CurrentDisplayMode, Converter={StaticResource ModeToVis}, ConverterParameter=Ascii}">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <Grid Margin="4,1" HorizontalAlignment="Stretch">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="120"/>
+                            <ColumnDefinition Width="68"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="{Binding Timestamp, StringFormat='HH:mm:ss.fff'}"
+                                   Foreground="{DynamicResource SecondaryTextBrush}"
+                                   FontFamily="Consolas" FontSize="12" VerticalAlignment="Top" Margin="0,2,0,0"/>
+                        <TextBlock Grid.Column="1" Text="{Binding Direction, StringFormat='{}{0}:'}"
+                                   Foreground="{Binding Direction, Converter={StaticResource DirToBrush}}"
+                                   FontWeight="Bold" FontSize="12" VerticalAlignment="Top" Margin="0,2,0,0"/>
+                        <TextBlock Grid.Column="2" Text="{Binding Data, Converter={StaticResource BytesToAscii}}"
+                                   Foreground="{DynamicResource AsciiDataBrush}"
+                                   FontFamily="Consolas" FontSize="12"
+                                   TextWrapping="Wrap"/>
+                    </Grid>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                </Style>
+            </ListView.ItemContainerStyle>
+        </ListView>
+
+        <!-- Dual (HEX | ASCII) ListView -->
+        <ListView Grid.Row="0" ItemsSource="{Binding Records}"
+                  Background="{DynamicResource SecondaryBackgroundBrush}"
+                  VirtualizingStackPanel.IsVirtualizing="True"
+                  ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                  HorizontalContentAlignment="Stretch"
+                  Visibility="{Binding CurrentDisplayMode, Converter={StaticResource ModeToVis}, ConverterParameter=Dual}">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <Grid Margin="4,1" HorizontalAlignment="Stretch">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="120"/>
+                            <ColumnDefinition Width="68"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Row="0" Grid.Column="0"
+                                   Text="{Binding Timestamp, StringFormat='HH:mm:ss.fff'}"
+                                   Foreground="{DynamicResource SecondaryTextBrush}"
+                                   FontFamily="Consolas" FontSize="12"/>
+                        <TextBlock Grid.Row="0" Grid.Column="1"
+                                   Text="{Binding Direction, StringFormat='{}{0}:'}"
+                                   Foreground="{Binding Direction, Converter={StaticResource DirToBrush}}"
+                                   FontWeight="Bold" FontSize="12"/>
+                        <TextBlock Grid.Row="0" Grid.Column="2"
+                                   Text="{Binding Data, Converter={StaticResource BytesToHex}}"
+                                   Foreground="{DynamicResource HexDataBrush}"
+                                   FontFamily="Consolas" FontSize="12"
+                                   TextWrapping="Wrap"/>
+                        <TextBlock Grid.Row="1" Grid.Column="2"
+                                   Text="{Binding Data, Converter={StaticResource BytesToAscii}}"
+                                   Foreground="{DynamicResource AsciiDataBrush}"
+                                   FontFamily="Consolas" FontSize="11"
+                                   TextWrapping="Wrap" Margin="0,1,0,2"/>
+                    </Grid>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                </Style>
+            </ListView.ItemContainerStyle>
+        </ListView>
+
+        <!-- Terminal Mode TextBox -->
+        <TextBox Grid.Row="0"
+                 Text="{Binding TerminalText, Mode=OneWay}"
+                 IsReadOnly="True"
+                 Visibility="{Binding CurrentDisplayMode, Converter={StaticResource ModeToVis}, ConverterParameter=Terminal}"
+                 Background="{DynamicResource PrimaryBackgroundBrush}"
+                 Foreground="{DynamicResource SuccessBrush}"
+                 FontFamily="Consolas" FontSize="13"
+                 BorderThickness="0"
+                 VerticalScrollBarVisibility="Auto"
+                 HorizontalScrollBarVisibility="Disabled"
+                 TextWrapping="Wrap"/>
+
+        <!-- Parsed Frames Pane (overlay when active) -->
+        <Border Grid.Row="0"
+                Visibility="{Binding ShowParsedPane, Converter={StaticResource BoolToVis}}"
+                Background="{DynamicResource PrimaryBackgroundBrush}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="6,4">
+                    <TextBlock Text="📦 协议解析:"
+                               Foreground="{DynamicResource AccentBrush}"
+                               FontWeight="SemiBold" VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding ActiveProtocol.Name, FallbackValue='未配置'}"
+                               Foreground="{DynamicResource PrimaryTextBrush}"
+                               Margin="6,0,0,0" VerticalAlignment="Center"/>
+                    <TextBlock Text="  帧数:"
+                               Foreground="{DynamicResource SecondaryTextBrush}"
+                               Margin="20,0,0,0" VerticalAlignment="Center" FontSize="11"/>
+                    <TextBlock Text="{Binding ParsedFrames.Count}"
+                               Foreground="{DynamicResource SuccessBrush}"
+                               Margin="4,0,0,0" VerticalAlignment="Center"
+                               FontFamily="Consolas" FontSize="11"/>
+                    <Button Content="清空" Width="50" Margin="20,0,0,0"
+                            Command="{Binding ClearParsedFramesCommand}"/>
+                    <Button Content="关闭" Width="50" Margin="4,0,0,0"
+                            Command="{Binding ToggleParsedPaneCommand}"/>
+                </StackPanel>
+                <ListView Grid.Row="1" ItemsSource="{Binding ParsedFrames}"
+                          Background="{DynamicResource SecondaryBackgroundBrush}"
+                          VirtualizingStackPanel.IsVirtualizing="True">
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <Border Margin="4,2" Padding="6,4"
+                                    Background="{DynamicResource SurfaceBrush}"
+                                    BorderBrush="{DynamicResource SurfaceBorderBrush}"
+                                    BorderThickness="0,0,0,1">
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding Timestamp, StringFormat='HH:mm:ss.fff'}"
+                                                   FontFamily="Consolas" FontSize="11"
+                                                   Foreground="{DynamicResource MutedTextBrush}"/>
+                                        <TextBlock Text="{Binding RawBytes, Converter={StaticResource BytesToHex}}"
+                                                   FontFamily="Consolas" FontSize="11"
+                                                   Foreground="{DynamicResource HexDataBrush}"
+                                                   Margin="10,0,0,0"/>
+                                    </StackPanel>
+                                    <ItemsControl ItemsSource="{Binding FieldValues}" Margin="0,2,0,0">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid Margin="0,1">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="100"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Grid.Column="0" Text="{Binding Name}"
+                                                               Foreground="{DynamicResource SecondaryTextBrush}"
+                                                               FontSize="11"/>
+                                                    <TextBlock Grid.Column="1" Text="{Binding Value}"
+                                                               Foreground="{DynamicResource PrimaryTextBrush}"
+                                                               FontFamily="Consolas" FontSize="11"/>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </Grid>
+        </Border>
+
+        <!-- Quick Send strip -->
+        <Border Grid.Row="1" Padding="6,3"
+                BorderBrush="{DynamicResource SurfaceBorderBrush}"
+                BorderThickness="0,1,0,0">
+            <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                          VerticalScrollBarVisibility="Disabled">
+                <ItemsControl ItemsSource="{Binding QuickSends}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Button Content="{Binding Name}"
+                                    Margin="0,0,4,0" Padding="8,3" FontSize="11"
+                                    Command="{Binding DataContext.QuickSendCommand,
+                                              RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                    CommandParameter="{Binding}"
+                                    ToolTip="{Binding Data}"/>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </Border>
+
+        <Border Grid.Row="2" BorderBrush="{DynamicResource SurfaceBorderBrush}"
                 BorderThickness="0,1" Padding="8">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <TextBox Grid.Row="0" Text="{Binding SendText, UpdateSourceTrigger=PropertyChanged}"
-                         MinHeight="40" AcceptsReturn="True"
-                         Background="{DynamicResource SurfaceBrush}"
-                         Foreground="{DynamicResource PrimaryTextBrush}"
-                         FontFamily="Consolas" FontSize="13"
-                         BorderBrush="{DynamicResource SurfaceBorderBrush}"/>
+                <WrapPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,4">
+                    <StackPanel Orientation="Horizontal" Margin="0,0,12,4">
+                        <TextBlock Text="波特率" VerticalAlignment="Center"
+                                   Foreground="{DynamicResource SecondaryTextBrush}"
+                                   FontSize="11" Margin="0,0,4,0"/>
+                        <ComboBox Width="90" Height="22" FontSize="11"
+                                  IsEditable="True"
+                                  ItemsSource="{Binding AvailableBaudRates}"
+                                  Text="{Binding SelectedBaudRate, UpdateSourceTrigger=LostFocus}"
+                                  ToolTip="切换波特率会重新打开当前端口"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,12,4">
+                        <TextBlock Text="显示" VerticalAlignment="Center"
+                                   Foreground="{DynamicResource SecondaryTextBrush}"
+                                   FontSize="11" Margin="0,0,4,0"/>
+                        <ComboBox Width="80" Height="22" FontSize="11"
+                                  ItemsSource="{Binding AvailableDisplayModes}"
+                                  SelectedItem="{Binding CurrentDisplayMode}"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,12,4">
+                        <TextBlock Text="格式" VerticalAlignment="Center"
+                                   Foreground="{DynamicResource SecondaryTextBrush}"
+                                   FontSize="11" Margin="0,0,4,0"/>
+                        <ComboBox Width="80" Height="22" FontSize="11"
+                                  ItemsSource="{Binding SendModes}"
+                                  SelectedItem="{Binding SendMode}"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,12,4">
+                        <TextBlock Text="行尾" VerticalAlignment="Center"
+                                   Foreground="{DynamicResource SecondaryTextBrush}"
+                                   FontSize="11" Margin="0,0,4,0"/>
+                        <ComboBox Width="70" Height="22" FontSize="11"
+                                  ItemsSource="{Binding LineEndings}"
+                                  SelectedItem="{Binding LineEnding}"/>
+                    </StackPanel>
+                </WrapPanel>
 
-                <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,6,0,0">
+                <StackPanel Grid.Row="1">
+                    <TextBox Text="{Binding SendText, UpdateSourceTrigger=PropertyChanged}"
+                             MinHeight="40" AcceptsReturn="True"
+                             Background="{DynamicResource SurfaceBrush}"
+                             Foreground="{DynamicResource PrimaryTextBrush}"
+                             FontFamily="Consolas" FontSize="13"
+                             BorderBrush="{DynamicResource SurfaceBorderBrush}"/>
+                    <TextBlock Text="{Binding SendStatus, FallbackValue='(就绪)', TargetNullValue='(就绪)'}"
+                               FontSize="11" FontFamily="Consolas"
+                               Margin="2,4,0,0" MinHeight="14"
+                               TextTrimming="CharacterEllipsis"
+                               Foreground="{Binding SendStatusKind, Converter={StaticResource SendStatusBrush}}"/>
+                </StackPanel>
+
+                <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,6,0,0">
                     <Button Content="发送 (Ctrl+Enter)"
                             Command="{Binding SendDataCommand}"
                             Background="{DynamicResource AccentBrush}"/>
+                    <ToggleButton Content="定时" Width="44" Margin="6,0,0,0"
+                                  IsChecked="{Binding TimedSendEnabled}"
+                                  ToolTip="周期发送当前文本"/>
+                    <TextBox Width="60" Margin="2,0,0,0"
+                             Text="{Binding TimedSendIntervalMs, UpdateSourceTrigger=PropertyChanged}"
+                             ToolTip="间隔 (毫秒)"
+                             VerticalContentAlignment="Center"/>
+                    <TextBlock Text="ms" VerticalAlignment="Center" Margin="2,0,4,0"
+                               Foreground="{DynamicResource SecondaryTextBrush}" FontSize="11"/>
                     <Button Content="&#x23F8;" Width="36" Margin="6,0,0,0"
                             Command="{Binding TogglePauseCommand}"/>
+                    <Button Content="解析" Width="50" Margin="6,0,0,0"
+                            Command="{Binding ToggleParsedPaneCommand}"
+                            ToolTip="切换协议解析面板"/>
+                    <ToggleButton Content="录制" Width="50" Margin="6,0,0,0"
+                                  IsChecked="{Binding IsLoggingToFile}"
+                                  ToolTip="把所有收发数据写入文件 (%LocalAppData%\SerialMaster\data\)"/>
+                    <Button Content="波形" Width="50" Margin="6,0,0,0"
+                            Command="{Binding ToggleWaveformCommand}"/>
+                    <Button Content="雷达" Width="50" Margin="6,0,0,0"
+                            Command="{Binding ToggleRadarCommand}"/>
+                    <Button Content="3D" Width="40" Margin="6,0,0,0"
+                            Command="{Binding ToggleView3DCommand}"/>
                     <Button Content="清空" Width="50" Margin="6,0,0,0"
                             Command="{Binding ClearRecordsCommand}"/>
 
                     <TextBlock Margin="20,0,0,0" VerticalAlignment="Center"
                                Foreground="{DynamicResource SecondaryTextBrush}"
                                FontSize="11">
-                        <Run Text="接收:"/>
+                        <Run Text="Rx:"/>
                         <Run Text="{Binding ReceivedBytes, StringFormat='{}{0:N0}'}"/>
-                        <Run Text="字节  "/>
-                        <Run Text="发送:"/>
+                        <Run Text="B  "/>
+                        <Run Text="{Binding ReceiveRate, StringFormat='{}+{0:F0}'}"
+                             Foreground="{DynamicResource SuccessBrush}"/>
+                        <Run Text="B/s  "/>
+                        <Run Text="Tx:"/>
                         <Run Text="{Binding SentBytes, StringFormat='{}{0:N0}'}"/>
-                        <Run Text="字节"/>
+                        <Run Text="B  "/>
+                        <Run Text="{Binding SendRate, StringFormat='{}+{0:F0}'}"
+                             Foreground="{DynamicResource AccentBrush}"/>
+                        <Run Text="B/s"/>
                     </TextBlock>
 
                     <Ellipse Width="8" Height="8" Fill="{DynamicResource ErrorBrush}"
@@ -101,13 +371,98 @@
             </Grid>
         </Border>
 
-        <Border Grid.Row="2" BorderBrush="{DynamicResource SurfaceBorderBrush}"
+        <Border Grid.Row="3" BorderBrush="{DynamicResource SurfaceBorderBrush}"
                 BorderThickness="0,1" Padding="6,3">
             <StackPanel Orientation="Horizontal">
-                <TextBlock Foreground="{DynamicResource SuccessBrush}" FontSize="11">
+                <TextBlock Foreground="{DynamicResource SuccessBrush}" FontSize="11"
+                           VerticalAlignment="Center">
                     <Run Text="&#x25CF; 已连接"/>
                     <Run Text="{Binding TabTitle}"/>
                 </TextBlock>
+
+                <Separator Width="1" Margin="10,2" Background="{DynamicResource SurfaceBorderBrush}"/>
+
+                <TextBlock Text="DTR" FontSize="11" VerticalAlignment="Center"
+                           Foreground="{DynamicResource SecondaryTextBrush}" Margin="0,0,4,0"/>
+                <ToggleButton Width="36" Height="20" FontSize="10"
+                              IsChecked="{Binding DtrEnabled, Mode=TwoWay}"
+                              Margin="0,0,6,0">
+                    <ToggleButton.Style>
+                        <Style TargetType="ToggleButton">
+                            <Setter Property="Content" Value="OFF"/>
+                            <Setter Property="Background" Value="{DynamicResource SurfaceBrush}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource MutedTextBrush}"/>
+                            <Setter Property="BorderBrush" Value="{DynamicResource SurfaceBorderBrush}"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="ToggleButton">
+                                        <Border Background="{TemplateBinding Background}"
+                                                BorderBrush="{TemplateBinding BorderBrush}"
+                                                BorderThickness="1" CornerRadius="3" Padding="4,1">
+                                            <ContentPresenter HorizontalAlignment="Center"
+                                                              VerticalAlignment="Center"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsChecked" Value="True">
+                                                <Setter Property="Background" Value="{DynamicResource SuccessBrush}"/>
+                                                <Setter Property="Foreground" Value="#1E1E2E"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                            <Style.Triggers>
+                                <Trigger Property="IsChecked" Value="True">
+                                    <Setter Property="Content" Value="ON"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </ToggleButton.Style>
+                </ToggleButton>
+
+                <TextBlock Text="RTS" FontSize="11" VerticalAlignment="Center"
+                           Foreground="{DynamicResource SecondaryTextBrush}" Margin="0,0,4,0"/>
+                <ToggleButton Width="36" Height="20" FontSize="10"
+                              IsChecked="{Binding RtsEnabled, Mode=TwoWay}">
+                    <ToggleButton.Style>
+                        <Style TargetType="ToggleButton">
+                            <Setter Property="Content" Value="OFF"/>
+                            <Setter Property="Background" Value="{DynamicResource SurfaceBrush}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource MutedTextBrush}"/>
+                            <Setter Property="BorderBrush" Value="{DynamicResource SurfaceBorderBrush}"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="ToggleButton">
+                                        <Border Background="{TemplateBinding Background}"
+                                                BorderBrush="{TemplateBinding BorderBrush}"
+                                                BorderThickness="1" CornerRadius="3" Padding="4,1">
+                                            <ContentPresenter HorizontalAlignment="Center"
+                                                              VerticalAlignment="Center"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsChecked" Value="True">
+                                                <Setter Property="Background" Value="{DynamicResource SuccessBrush}"/>
+                                                <Setter Property="Foreground" Value="#1E1E2E"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                            <Style.Triggers>
+                                <Trigger Property="IsChecked" Value="True">
+                                    <Setter Property="Content" Value="ON"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </ToggleButton.Style>
+                </ToggleButton>
+
+                <Button Content="断开" Width="50" Height="22" FontSize="10"
+                        Margin="12,0,0,0"
+                        Command="{Binding DisconnectCommand}"
+                        Background="{DynamicResource ErrorBrush}"
+                        Foreground="{DynamicResource PrimaryBackgroundBrush}"
+                        BorderThickness="0"/>
             </StackPanel>
         </Border>
     </Grid>
